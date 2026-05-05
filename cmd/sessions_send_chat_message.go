@@ -19,18 +19,18 @@ var (
 )
 
 var sessionsSendChatMessageCmd = &cobra.Command{
-	Use:   "send-chat-message <blueprint-instance-id>",
+	Use:   "send-chat-message <session-id>",
 	Short: "Send Chat Message",
 	Long:  `Send Chat Message
 
 Arguments:
-  blueprint-instance-id: required`,
+  session-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel sessions send-chat-message <blueprint-instance-id>",
+	Example: "meibel sessions send-chat-message <session-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		blueprintInstanceId := args[0]
+		sessionId := args[0]
 
 		var body sdk.ChatMessageRequest
 
@@ -53,7 +53,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.Sessions.SendChatMessage(ctx, blueprintInstanceId, body)
+		result, err := client.Sessions.SendChatMessage(ctx, sessionId, body)
 		if err != nil {
 			return err
 		}

@@ -2,33 +2,34 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
 	"github.com/meibel-ai/meibel/internal/output"
+	"github.com/meibel-ai/meibel/internal/config"
+	"github.com/meibel-ai/meibel/internal/tui"
 	"github.com/meibel-ai/meibel/internal/upload"
 )
 
 var (
 	contentUploadContentFile string
+	contentUploadContentTrace bool
+	contentUploadContentBrowser bool
+	contentUploadContentWait bool
 )
 
 var contentUploadContentCmd = &cobra.Command{
-	Use:   "upload <datasource-id>",
-	Short: "Upload Content",
-	Long:  `Upload Content
-
-Arguments:
-  datasource-id: required`,
-	Args:  cobra.ExactArgs(1),
-	Example: "meibel datasources content upload <datasource-id>",
+	Use:   "upload",
+	Short: "Upload Content (async)",
+	Long:  `Upload Content (async)`,
+	Example: "meibel datasources content upload",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
-
-		datasourceId := args[0]
 
 		if contentUploadContentFile == "" {
 			home, _ := os.UserHomeDir()
@@ -66,10 +67,67 @@ Arguments:
 		fileName := filepath.Base(contentUploadContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Datasources.Content.UploadContent(ctx, datasourceId, pr, fileName)
+		if contentUploadContentWait {
+			result, err := client.Datasources.Content.UploadAndListContent(ctx, pr, fileName)
+			pr.Done()
+			if err != nil {
+				return err
+			}
+
+			type jobResult struct {
+				JobID string `json:"job_id"`
+			}
+			var jr jobResult
+			b, _ := json.Marshal(result)
+			json.Unmarshal(b, &jr)
+
+			if contentUploadContentBrowser && jr.JobID != "" {
+				consoleURL := deriveConsoleURL(config.GetString("base_url"))
+				projectID := config.GetString("project_id")
+				if consoleURL != "" && projectID != "" {
+					url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
+					openBrowser(url)
+				}
+			}
+
+			return output.Print(result)
+		}
+
+		result, err := client.Datasources.Content.UploadContent(ctx, pr, fileName)
 		pr.Done()
 		if err != nil {
 			return err
+		}
+
+		type jobResult struct {
+			JobID string `json:"job_id"`
+		}
+		var jr jobResult
+		b, _ := json.Marshal(result)
+		json.Unmarshal(b, &jr)
+
+		if contentUploadContentBrowser && jr.JobID != "" {
+			consoleURL := deriveConsoleURL(config.GetString("base_url"))
+			projectID := config.GetString("project_id")
+			if consoleURL != "" && projectID != "" {
+				url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
+				openBrowser(url)
+			}
+		}
+
+		if contentUploadContentTrace && jr.JobID != "" {
+			output.Print(result)
+
+			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+			defer cancel()
+
+			stream, err := client.Datasources.Content.StreamUploadProgress(ctx, jr.JobID)
+			if err != nil {
+				return err
+			}
+			defer stream.Close()
+
+			return tui.StreamEvents(ctx, stream)
 		}
 
 		return output.Print(result)
@@ -81,4 +139,7 @@ func init() {
 
 	contentUploadContentCmd.Flags().StringVarP(&contentUploadContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
 	contentUploadContentCmd.MarkFlagFilename("file")
+	contentUploadContentCmd.Flags().BoolVar(&contentUploadContentTrace, "trace", false, "stream parsing trace after upload")
+	contentUploadContentCmd.Flags().BoolVar(&contentUploadContentBrowser, "browser", false, "open trace in console")
+	contentUploadContentCmd.Flags().BoolVar(&contentUploadContentWait, "wait", false, "wait for parsing to complete (synchronous)")
 }

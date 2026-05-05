@@ -34,7 +34,7 @@ Arguments:
 		datasourceId := args[0]
 		dataElementId := args[1]
 
-		var body sdk.GatewayServiceV2ModelsDataElementsUpdateDataElementRequest
+		var body sdk.UpdateDataElementRequest
 
 		if dataElementsUpdateDataElementData != "" {
 			if err := json.Unmarshal([]byte(dataElementsUpdateDataElementData), &body); err != nil {

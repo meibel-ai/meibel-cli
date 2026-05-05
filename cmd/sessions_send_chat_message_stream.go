@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
 	"golang.org/x/term"
+	"github.com/meibel-ai/meibel/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go"
 )
 
@@ -18,18 +20,18 @@ var (
 )
 
 var sessionsSendChatMessageStreamCmd = &cobra.Command{
-	Use:   "send-chat-message-stream <blueprint-instance-id>",
+	Use:   "send-chat-message-stream <session-id>",
 	Short: "Send a chat message and stream the response via SSE",
-	Long:  `Send a chat message to a running chat agent workflow and stream the response as Server-Sent Events.
+	Long:  `Send a chat message and stream the response via SSE
 
 Arguments:
-  blueprint-instance-id: required`,
+  session-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel sessions send-chat-message-stream <blueprint-instance-id>",
+	Example: "meibel sessions send-chat-message-stream <session-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		blueprintInstanceId := args[0]
+		sessionId := args[0]
 
 		var body sdk.ChatMessageRequest
 
@@ -52,13 +54,17 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		err := client.Sessions.SendChatMessageStream(ctx, blueprintInstanceId, body)
+		// Set up signal handling for graceful shutdown
+		ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+		defer cancel()
+
+		stream, err := client.Sessions.SendChatMessageStream(ctx, sessionId, body)
 		if err != nil {
 			return err
 		}
+		defer stream.Close()
 
-		fmt.Println("Success")
-		return nil
+		return tui.StreamEvents(ctx, stream)
 	},
 }
 

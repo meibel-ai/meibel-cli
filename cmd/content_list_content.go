@@ -39,12 +39,17 @@ Arguments:
 			opts.Limit = &contentListContentLimit
 		}
 
-		result, err := client.Datasources.Content.ListContent(ctx, datasourceId, opts)
-		if err != nil {
+		iter := client.Datasources.Content.ListContent(ctx, datasourceId, opts)
+
+		var items []interface{}
+		for iter.Next(ctx) {
+			items = append(items, iter.Item())
+		}
+		if err := iter.Err(); err != nil {
 			return err
 		}
 
-		return output.Print(result)
+		return output.Print(items)
 	},
 }
 

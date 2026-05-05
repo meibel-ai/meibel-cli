@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	dataElementsSearchDataElementsCursor string
+	dataElementsSearchDataElementsLimit int64
 	dataElementsSearchDataElementsData string
 	dataElementsSearchDataElementsInteractive bool
 )
@@ -26,7 +28,7 @@ var dataElementsSearchDataElementsCmd = &cobra.Command{
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel datasources data-elements search <datasource-id>",
+	Example: "meibel datasources data-elements search <datasource-id> --cursor=<value> --limit=<value>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
@@ -52,7 +54,15 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.Datasources.DataElements.SearchDataElements(ctx, datasourceId, body)
+		opts := &sdk.SearchDataElementsOptions{}
+		if dataElementsSearchDataElementsCursor != "" {
+			opts.Cursor = &dataElementsSearchDataElementsCursor
+		}
+		if dataElementsSearchDataElementsLimit != 0 {
+			opts.Limit = &dataElementsSearchDataElementsLimit
+		}
+
+		result, err := client.Datasources.DataElements.SearchDataElements(ctx, datasourceId, body, opts)
 		if err != nil {
 			return err
 		}
@@ -64,6 +74,8 @@ Arguments:
 func init() {
 	dataElementsCmd.AddCommand(dataElementsSearchDataElementsCmd)
 
+	dataElementsSearchDataElementsCmd.Flags().StringVarP(&dataElementsSearchDataElementsCursor, "cursor", "", "", "Cursor for pagination")
+	dataElementsSearchDataElementsCmd.Flags().Int64VarP(&dataElementsSearchDataElementsLimit, "limit", "", 100, "Maximum items to return")
 	dataElementsSearchDataElementsCmd.Flags().StringVarP(&dataElementsSearchDataElementsData, "data", "d", "", "JSON data for the request body")
 	dataElementsSearchDataElementsCmd.Flags().BoolVarP(&dataElementsSearchDataElementsInteractive, "interactive", "i", false, "use interactive form input")
 }

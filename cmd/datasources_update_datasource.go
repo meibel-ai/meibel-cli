@@ -32,7 +32,7 @@ Arguments:
 
 		datasourceId := args[0]
 
-		var body sdk.GatewayServiceV2ModelsDatasourcesUpdateDatasourceRequest
+		var body sdk.UpdateDatasourceRequest
 
 		if datasourcesUpdateDatasourceData != "" {
 			if err := json.Unmarshal([]byte(datasourcesUpdateDatasourceData), &body); err != nil {

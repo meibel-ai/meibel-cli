@@ -14,26 +14,24 @@ import (
 	"github.com/meibel-ai/meibel/internal/config"
 	"github.com/meibel-ai/meibel/internal/tui"
 	"github.com/meibel-ai/meibel/internal/upload"
-	sdk "github.com/meibel-ai/meibel-go"
 )
 
 var (
-	documentsProcessDocumentFormat string
-	documentsProcessDocumentFile string
-	documentsProcessDocumentTrace bool
-	documentsProcessDocumentBrowser bool
+	contentUploadAndListContentFile string
+	contentUploadAndListContentTrace bool
+	contentUploadAndListContentBrowser bool
 )
 
-var documentsProcessDocumentCmd = &cobra.Command{
-	Use:   "process",
-	Short: "Parse a document (sync)",
-	Long:  `Upload a document and block until parsing is complete. Returns the full parsed result.`,
-	Example: "meibel documents process --format=<value>",
+var contentUploadAndListContentCmd = &cobra.Command{
+	Use:   "upload-and-list",
+	Short: "Upload Content (sync)",
+	Long:  `Upload Content (sync)`,
+	Example: "meibel datasources content upload-and-list",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		if documentsProcessDocumentFile == "" {
+		if contentUploadAndListContentFile == "" {
 			home, _ := os.UserHomeDir()
 			if home == "" {
 				home, _ = os.Getwd()
@@ -47,16 +45,16 @@ var documentsProcessDocumentCmd = &cobra.Command{
 				ShowSize(true).
 				ShowPermissions(false).
 				Height(15).
-				Value(&documentsProcessDocumentFile)
+				Value(&contentUploadAndListContentFile)
 			if err := huh.NewForm(huh.NewGroup(picker)).Run(); err != nil {
 				return err
 			}
-			if documentsProcessDocumentFile == "" {
+			if contentUploadAndListContentFile == "" {
 				return fmt.Errorf("no file selected")
 			}
 		}
 
-		f, err := os.Open(documentsProcessDocumentFile)
+		f, err := os.Open(contentUploadAndListContentFile)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
@@ -66,10 +64,10 @@ var documentsProcessDocumentCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to stat file: %w", err)
 		}
-		fileName := filepath.Base(documentsProcessDocumentFile)
+		fileName := filepath.Base(contentUploadAndListContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Documents.ProcessDocument(ctx, pr, fileName, opts)
+		result, err := client.Datasources.Content.UploadAndListContent(ctx, pr, fileName)
 		pr.Done()
 		if err != nil {
 			return err
@@ -82,7 +80,7 @@ var documentsProcessDocumentCmd = &cobra.Command{
 		b, _ := json.Marshal(result)
 		json.Unmarshal(b, &jr)
 
-		if documentsProcessDocumentBrowser && jr.JobID != "" {
+		if contentUploadAndListContentBrowser && jr.JobID != "" {
 			consoleURL := deriveConsoleURL(config.GetString("base_url"))
 			projectID := config.GetString("project_id")
 			if consoleURL != "" && projectID != "" {
@@ -91,13 +89,13 @@ var documentsProcessDocumentCmd = &cobra.Command{
 			}
 		}
 
-		if documentsProcessDocumentTrace && jr.JobID != "" {
+		if contentUploadAndListContentTrace && jr.JobID != "" {
 			output.Print(result)
 
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()
 
-			stream, err := client.Documents.StreamDocumentTrace(ctx, jr.JobID)
+			stream, err := client.Datasources.Content.StreamUploadProgress(ctx, jr.JobID)
 			if err != nil {
 				return err
 			}
@@ -106,19 +104,15 @@ var documentsProcessDocumentCmd = &cobra.Command{
 			return tui.StreamEvents(ctx, stream)
 		}
 
-		if !output.PrintMarkdown(result, "result") {
-			return output.Print(result)
-		}
-		return nil
+		return output.Print(result)
 	},
 }
 
 func init() {
-	documentsCmd.AddCommand(documentsProcessDocumentCmd)
+	contentCmd.AddCommand(contentUploadAndListContentCmd)
 
-	documentsProcessDocumentCmd.Flags().StringVarP(&documentsProcessDocumentFormat, "format", "", "markdown", "Result format: markdown, annotated, docling, json")
-	documentsProcessDocumentCmd.Flags().StringVarP(&documentsProcessDocumentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
-	documentsProcessDocumentCmd.MarkFlagFilename("file")
-	documentsProcessDocumentCmd.Flags().BoolVar(&documentsProcessDocumentTrace, "trace", false, "stream parsing trace after upload")
-	documentsProcessDocumentCmd.Flags().BoolVar(&documentsProcessDocumentBrowser, "browser", false, "open trace in console")
+	contentUploadAndListContentCmd.Flags().StringVarP(&contentUploadAndListContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
+	contentUploadAndListContentCmd.MarkFlagFilename("file")
+	contentUploadAndListContentCmd.Flags().BoolVar(&contentUploadAndListContentTrace, "trace", false, "stream parsing trace after upload")
+	contentUploadAndListContentCmd.Flags().BoolVar(&contentUploadAndListContentBrowser, "browser", false, "open trace in console")
 }
