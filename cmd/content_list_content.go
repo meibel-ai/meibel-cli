@@ -22,7 +22,7 @@ var contentListContentCmd = &cobra.Command{
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel content list <datasource-id> --prefix=<value> --continuation-token=<value>",
+	Example: "meibel datasources content list <datasource-id> --prefix=<value> --continuation-token=<value>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
@@ -39,17 +39,12 @@ Arguments:
 			opts.Limit = &contentListContentLimit
 		}
 
-		iter := client.Content.ListContent(ctx, datasourceId, opts)
-
-		var items []interface{}
-		for iter.Next(ctx) {
-			items = append(items, iter.Item())
-		}
-		if err := iter.Err(); err != nil {
+		result, err := client.Datasources.Content.ListContent(ctx, datasourceId, opts)
+		if err != nil {
 			return err
 		}
 
-		return output.Print(items)
+		return output.Print(result)
 	},
 }
 

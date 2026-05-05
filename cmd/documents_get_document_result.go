@@ -5,11 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel/internal/output"
-	sdk "github.com/meibel-ai/meibel-go"
-)
-
-var (
-	documentsGetDocumentResultFormat string
 )
 
 var documentsGetDocumentResultCmd = &cobra.Command{
@@ -20,18 +15,13 @@ var documentsGetDocumentResultCmd = &cobra.Command{
 Arguments:
   job-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel documents get-result <job-id> --format=<value>",
+	Example: "meibel documents get-result <job-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		jobId := args[0]
 
-		opts := &sdk.GetDocumentResultOptions{}
-		if documentsGetDocumentResultFormat != "" {
-			opts.Format = &documentsGetDocumentResultFormat
-		}
-
-		result, err := client.Documents.GetDocumentResult(ctx, jobId, opts)
+		result, err := client.Documents.GetDocumentResult(ctx, jobId)
 		if err != nil {
 			return err
 		}
@@ -46,5 +36,4 @@ Arguments:
 func init() {
 	documentsCmd.AddCommand(documentsGetDocumentResultCmd)
 
-	documentsGetDocumentResultCmd.Flags().StringVarP(&documentsGetDocumentResultFormat, "format", "", "markdown", "Result format: markdown, annotated, docling, json")
 }

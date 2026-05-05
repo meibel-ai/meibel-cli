@@ -11,5 +11,5 @@ var dataElementsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(dataElementsCmd)
+	datasourcesCmd.AddCommand(dataElementsCmd)
 }

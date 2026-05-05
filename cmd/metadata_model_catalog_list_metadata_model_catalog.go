@@ -25,12 +25,17 @@ var metadataModelCatalogListMetadataModelCatalogCmd = &cobra.Command{
 			opts.Scope = &metadataModelCatalogListMetadataModelCatalogScope
 		}
 
-		result, err := client.MetadataModelCatalog.ListMetadataModelCatalog(ctx, opts)
-		if err != nil {
+		iter := client.MetadataModelCatalog.ListMetadataModelCatalog(ctx, opts)
+
+		var items []interface{}
+		for iter.Next(ctx) {
+			items = append(items, iter.Item())
+		}
+		if err := iter.Err(); err != nil {
 			return err
 		}
 
-		return output.Print(result)
+		return output.Print(items)
 	},
 }
 

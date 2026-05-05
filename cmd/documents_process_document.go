@@ -14,11 +14,9 @@ import (
 	"github.com/meibel-ai/meibel/internal/config"
 	"github.com/meibel-ai/meibel/internal/tui"
 	"github.com/meibel-ai/meibel/internal/upload"
-	sdk "github.com/meibel-ai/meibel-go"
 )
 
 var (
-	documentsProcessDocumentFormat string
 	documentsProcessDocumentFile string
 	documentsProcessDocumentTrace bool
 	documentsProcessDocumentBrowser bool
@@ -28,7 +26,7 @@ var documentsProcessDocumentCmd = &cobra.Command{
 	Use:   "process",
 	Short: "Parse a document (sync)",
 	Long:  `Upload a document and block until parsing is complete. Returns the full parsed result.`,
-	Example: "meibel documents process --format=<value>",
+	Example: "meibel documents process",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
@@ -69,7 +67,7 @@ var documentsProcessDocumentCmd = &cobra.Command{
 		fileName := filepath.Base(documentsProcessDocumentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Documents.ProcessDocument(ctx, pr, fileName, opts)
+		result, err := client.Documents.ProcessDocument(ctx, pr, fileName)
 		pr.Done()
 		if err != nil {
 			return err
@@ -116,7 +114,6 @@ var documentsProcessDocumentCmd = &cobra.Command{
 func init() {
 	documentsCmd.AddCommand(documentsProcessDocumentCmd)
 
-	documentsProcessDocumentCmd.Flags().StringVarP(&documentsProcessDocumentFormat, "format", "", "markdown", "Result format: markdown, annotated, docling, json")
 	documentsProcessDocumentCmd.Flags().StringVarP(&documentsProcessDocumentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
 	documentsProcessDocumentCmd.MarkFlagFilename("file")
 	documentsProcessDocumentCmd.Flags().BoolVar(&documentsProcessDocumentTrace, "trace", false, "stream parsing trace after upload")

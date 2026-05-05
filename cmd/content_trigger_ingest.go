@@ -15,13 +15,13 @@ var contentTriggerIngestCmd = &cobra.Command{
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel content trigger-ingest <datasource-id>",
+	Example: "meibel datasources content trigger-ingest <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 
-		result, err := client.Content.TriggerIngest(ctx, datasourceId)
+		result, err := client.Datasources.Content.TriggerIngest(ctx, datasourceId)
 		if err != nil {
 			return err
 		}

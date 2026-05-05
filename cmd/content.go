@@ -11,5 +11,5 @@ var contentCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(contentCmd)
+	datasourcesCmd.AddCommand(contentCmd)
 }

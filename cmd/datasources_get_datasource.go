@@ -5,11 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel/internal/output"
-	sdk "github.com/meibel-ai/meibel-go"
-)
-
-var (
-	datasourcesGetDatasourceIncludeTables bool
 )
 
 var datasourcesGetDatasourceCmd = &cobra.Command{
@@ -20,18 +15,13 @@ var datasourcesGetDatasourceCmd = &cobra.Command{
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel datasources get <datasource-id> --include-tables=<value>",
+	Example: "meibel datasources get <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 
-		opts := &sdk.GetDatasourceOptions{}
-		if datasourcesGetDatasourceIncludeTables {
-			opts.IncludeTables = &datasourcesGetDatasourceIncludeTables
-		}
-
-		result, err := client.Datasources.GetDatasource(ctx, datasourceId, opts)
+		result, err := client.Datasources.GetDatasource(ctx, datasourceId)
 		if err != nil {
 			return err
 		}
@@ -43,5 +33,4 @@ Arguments:
 func init() {
 	datasourcesCmd.AddCommand(datasourcesGetDatasourceCmd)
 
-	datasourcesGetDatasourceCmd.Flags().BoolVarP(&datasourcesGetDatasourceIncludeTables, "include-tables", "", false, "Include table and column details (structured datasources only)")
 }

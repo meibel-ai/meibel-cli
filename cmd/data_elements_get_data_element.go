@@ -16,14 +16,14 @@ Arguments:
   datasource-id: required
   data-element-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel data-elements get <datasource-id> <data-element-id>",
+	Example: "meibel datasources data-elements get <datasource-id> <data-element-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 		dataElementId := args[1]
 
-		result, err := client.DataElements.GetDataElement(ctx, datasourceId, dataElementId)
+		result, err := client.Datasources.DataElements.GetDataElement(ctx, datasourceId, dataElementId)
 		if err != nil {
 			return err
 		}

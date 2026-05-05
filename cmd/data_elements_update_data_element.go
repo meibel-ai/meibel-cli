@@ -27,14 +27,14 @@ Arguments:
   datasource-id: required
   data-element-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel data-elements update <datasource-id> <data-element-id>",
+	Example: "meibel datasources data-elements update <datasource-id> <data-element-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 		dataElementId := args[1]
 
-		var body sdk.UpdateDataElementRequest
+		var body sdk.GatewayServiceV2ModelsDataElementsUpdateDataElementRequest
 
 		if dataElementsUpdateDataElementData != "" {
 			if err := json.Unmarshal([]byte(dataElementsUpdateDataElementData), &body); err != nil {
@@ -54,7 +54,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.DataElements.UpdateDataElement(ctx, datasourceId, dataElementId, body)
+		result, err := client.Datasources.DataElements.UpdateDataElement(ctx, datasourceId, dataElementId, body)
 		if err != nil {
 			return err
 		}
