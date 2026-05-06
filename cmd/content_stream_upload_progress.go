@@ -2,17 +2,15 @@ package cmd
 
 import (
 	"context"
-	"os"
-	"os/signal"
+	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/meibel-ai/meibel/internal/tui"
 )
 
 var contentStreamUploadProgressCmd = &cobra.Command{
 	Use:   "stream-upload-progress <upload-id>",
-	Short: "Stream Upload Progress",
-	Long:  `Stream Upload Progress
+	Short: "Stream upload progress events",
+	Long:  `Subscribe to real-time upload progress updates via Server-Sent Events
 
 Arguments:
   upload-id: required`,
@@ -23,17 +21,13 @@ Arguments:
 
 		uploadId := args[0]
 
-		// Set up signal handling for graceful shutdown
-		ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-		defer cancel()
-
-		stream, err := client.Datasources.Content.StreamUploadProgress(ctx, uploadId)
+		err := client.Datasources.Content.StreamUploadProgress(ctx, uploadId)
 		if err != nil {
 			return err
 		}
-		defer stream.Close()
 
-		return tui.StreamEvents(ctx, stream)
+		fmt.Println("Success")
+		return nil
 	},
 }
 

@@ -6,8 +6,8 @@ import (
 
 var contentCmd = &cobra.Command{
 	Use:   "content",
-	Short: "Manage Content",
-	Long:  `Commands for managing Content resources.`,
+	Short: "Manage content",
+	Long:  `Commands for managing content resources.`,
 }
 
 func init() {

@@ -9,24 +9,24 @@ import (
 )
 
 var (
-	datasourcesDeleteDatasourceForce bool
+	ragDeleteRagConfigForce bool
 )
 
-var datasourcesDeleteDatasourceCmd = &cobra.Command{
-	Use:   "delete <datasource-id>",
-	Short: "Delete Datasource",
-	Long:  `Delete Datasource
+var ragDeleteRagConfigCmd = &cobra.Command{
+	Use:   "delete-config <datasource-id>",
+	Short: "Delete Rag Config",
+	Long:  `Delete Rag Config
 
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel datasources delete <datasource-id>",
+	Example: "meibel datasources rag delete-config <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 
-		if !datasourcesDeleteDatasourceForce {
+		if !ragDeleteRagConfigForce {
 			fmt.Print("Are you sure? [y/N] ")
 			var confirm string
 			fmt.Scanln(&confirm)
@@ -36,7 +36,7 @@ Arguments:
 			}
 		}
 
-		result, err := client.Datasources.DeleteDatasource(ctx, datasourceId)
+		result, err := client.Datasources.Rag.DeleteRagConfig(ctx, datasourceId)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ Arguments:
 }
 
 func init() {
-	datasourcesCmd.AddCommand(datasourcesDeleteDatasourceCmd)
+	ragCmd.AddCommand(ragDeleteRagConfigCmd)
 
-	datasourcesDeleteDatasourceCmd.Flags().BoolVarP(&datasourcesDeleteDatasourceForce, "force", "f", false, "skip confirmation prompt")
+	ragDeleteRagConfigCmd.Flags().BoolVarP(&ragDeleteRagConfigForce, "force", "f", false, "skip confirmation prompt")
 }

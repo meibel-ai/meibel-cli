@@ -7,23 +7,23 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/meibel-ai/meibel/internal/config"
-	"github.com/meibel-ai/meibel/internal/output"
-	"github.com/meibel-ai/meibel/internal/version"
-	sdk "github.com/meibel-ai/meibel-go/v2"
+	"github.com/meibel-ai/meibel-cli/internal/config"
+	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/version"
+	sdk "github.com/meibel-ai/meibel-go"
 )
 
 var (
 	cfgFile string
 	jsonOutput bool
 	debug bool
-	client *sdk.MeibelClient
+	client *sdk.MeibelgoClient
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "meibel",
-	Short: "meibel-ai-api CLI",
-	Long: `The Meibel API provides document parsing, datasource management, and AI agent orchestration. Read the docs at https://docs.meibel.ai to learn more.`,
+	Short: "meibel CLI",
+	Long: `The Meibel API provides document parsing, datasource management, and AI agent orchestration.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// Initialize configuration
 		if err := config.Init(cfgFile); err != nil {
