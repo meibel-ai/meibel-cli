@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	sessionsSendChatMessageData string
-	sessionsSendChatMessageInteractive bool
+	agentsSessionsSendChatMessageData string
+	agentsSessionsSendChatMessageInteractive bool
 )
 
-var sessionsSendChatMessageCmd = &cobra.Command{
+var agentsSessionsSendChatMessageCmd = &cobra.Command{
 	Use:   "send-chat-message <session-id>",
 	Short: "Send Chat Message",
 	Long:  `Send Chat Message
@@ -26,7 +26,7 @@ var sessionsSendChatMessageCmd = &cobra.Command{
 Arguments:
   session-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel sessions send-chat-message <session-id>",
+	Example: "meibel agents agents-sessions send-chat-message <session-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
@@ -34,11 +34,11 @@ Arguments:
 
 		var body sdk.ChatMessageRequest
 
-		if sessionsSendChatMessageData != "" {
-			if err := json.Unmarshal([]byte(sessionsSendChatMessageData), &body); err != nil {
+		if agentsSessionsSendChatMessageData != "" {
+			if err := json.Unmarshal([]byte(agentsSessionsSendChatMessageData), &body); err != nil {
 				return fmt.Errorf("invalid JSON data: %w", err)
 			}
-		} else if sessionsSendChatMessageInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
+		} else if agentsSessionsSendChatMessageInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
 			// Interactive form
 			form := huh.NewForm(
 				huh.NewGroup(
@@ -53,7 +53,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.Sessions.SendChatMessage(ctx, sessionId, body)
+		result, err := client.Agents.Sessions.SendChatMessage(ctx, sessionId, body)
 		if err != nil {
 			return err
 		}
@@ -63,8 +63,8 @@ Arguments:
 }
 
 func init() {
-	sessionsCmd.AddCommand(sessionsSendChatMessageCmd)
+	agentsSessionsCmd.AddCommand(agentsSessionsSendChatMessageCmd)
 
-	sessionsSendChatMessageCmd.Flags().StringVarP(&sessionsSendChatMessageData, "data", "d", "", "JSON data for the request body")
-	sessionsSendChatMessageCmd.Flags().BoolVarP(&sessionsSendChatMessageInteractive, "interactive", "i", false, "use interactive form input")
+	agentsSessionsSendChatMessageCmd.Flags().StringVarP(&agentsSessionsSendChatMessageData, "data", "d", "", "JSON data for the request body")
+	agentsSessionsSendChatMessageCmd.Flags().BoolVarP(&agentsSessionsSendChatMessageInteractive, "interactive", "i", false, "use interactive form input")
 }
