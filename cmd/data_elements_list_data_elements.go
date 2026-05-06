@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel/internal/output"
-	sdk "github.com/meibel-ai/meibel-go"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (

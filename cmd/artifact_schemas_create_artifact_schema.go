@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"golang.org/x/term"
 	"github.com/meibel-ai/meibel/internal/output"
-	sdk "github.com/meibel-ai/meibel-go"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (

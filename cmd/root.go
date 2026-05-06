@@ -10,7 +10,7 @@ import (
 	"github.com/meibel-ai/meibel/internal/config"
 	"github.com/meibel-ai/meibel/internal/output"
 	"github.com/meibel-ai/meibel/internal/version"
-	sdk "github.com/meibel-ai/meibel-go"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (

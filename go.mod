@@ -3,7 +3,7 @@ module github.com/meibel-ai/meibel
 go 1.21
 
 require (
-	github.com/meibel-ai/meibel-go v0.0.0
+	github.com/meibel-ai/meibel-go/v2 v2.0.0
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/charmbracelet/bubbletea v0.25.0
@@ -14,4 +14,4 @@ require (
 	golang.org/x/term v0.16.0
 )
 
-replace github.com/meibel-ai/meibel-go => ../go
+replace github.com/meibel-ai/meibel-go/v2 => ../go
