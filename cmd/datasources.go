@@ -6,8 +6,8 @@ import (
 
 var datasourcesCmd = &cobra.Command{
 	Use:   "datasources",
-	Short: "Manage datasources",
-	Long:  `Commands for managing datasources resources.`,
+	Short: "Manage Datasources",
+	Long:  `Commands for managing Datasources resources.`,
 }
 
 func init() {
