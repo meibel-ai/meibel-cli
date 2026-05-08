@@ -18,6 +18,10 @@ import (
 
 var (
 	fileUploadsUploadContentFile string
+	fileUploadsUploadContentDatasourceId string
+	fileUploadsUploadContentName string
+	fileUploadsUploadContentDescription string
+	fileUploadsUploadContentMetadataConfig string
 	fileUploadsUploadContentTrace bool
 	fileUploadsUploadContentBrowser bool
 	fileUploadsUploadContentWait bool
@@ -68,7 +72,7 @@ var fileUploadsUploadContentCmd = &cobra.Command{
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
 		if fileUploadsUploadContentWait {
-			result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName)
+			result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName, fileUploadsUploadContentDatasourceId, fileUploadsUploadContentName, fileUploadsUploadContentDescription, fileUploadsUploadContentMetadataConfig)
 			pr.Done()
 			if err != nil {
 				return err
@@ -93,7 +97,7 @@ var fileUploadsUploadContentCmd = &cobra.Command{
 			return output.Print(result)
 		}
 
-		result, err := client.Datasources.FileUploads.UploadContent(ctx, pr, fileName)
+		result, err := client.Datasources.FileUploads.UploadContent(ctx, pr, fileName, fileUploadsUploadContentDatasourceId, fileUploadsUploadContentName, fileUploadsUploadContentDescription, fileUploadsUploadContentMetadataConfig)
 		pr.Done()
 		if err != nil {
 			return err
@@ -139,6 +143,10 @@ func init() {
 
 	fileUploadsUploadContentCmd.Flags().StringVarP(&fileUploadsUploadContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
 	fileUploadsUploadContentCmd.MarkFlagFilename("file")
+	fileUploadsUploadContentCmd.Flags().StringVar(&fileUploadsUploadContentDatasourceId, "datasource-id", "", "datasource id")
+	fileUploadsUploadContentCmd.Flags().StringVar(&fileUploadsUploadContentName, "name", "", "name")
+	fileUploadsUploadContentCmd.Flags().StringVar(&fileUploadsUploadContentDescription, "description", "", "description")
+	fileUploadsUploadContentCmd.Flags().StringVar(&fileUploadsUploadContentMetadataConfig, "metadata-config", "", "metadata config")
 	fileUploadsUploadContentCmd.Flags().BoolVar(&fileUploadsUploadContentTrace, "trace", false, "stream parsing trace after upload")
 	fileUploadsUploadContentCmd.Flags().BoolVar(&fileUploadsUploadContentBrowser, "browser", false, "open trace in console")
 	fileUploadsUploadContentCmd.Flags().BoolVar(&fileUploadsUploadContentWait, "wait", false, "wait for parsing to complete (synchronous)")

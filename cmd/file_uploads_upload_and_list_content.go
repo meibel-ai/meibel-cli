@@ -18,6 +18,11 @@ import (
 
 var (
 	fileUploadsUploadAndListContentFile string
+	fileUploadsUploadAndListContentDatasourceId string
+	fileUploadsUploadAndListContentName string
+	fileUploadsUploadAndListContentDescription string
+	fileUploadsUploadAndListContentMetadataConfig string
+	fileUploadsUploadAndListContentTriggerIngest string
 	fileUploadsUploadAndListContentTrace bool
 	fileUploadsUploadAndListContentBrowser bool
 )
@@ -67,7 +72,7 @@ var fileUploadsUploadAndListContentCmd = &cobra.Command{
 		fileName := filepath.Base(fileUploadsUploadAndListContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName)
+		result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName, fileUploadsUploadAndListContentDatasourceId, fileUploadsUploadAndListContentName, fileUploadsUploadAndListContentDescription, fileUploadsUploadAndListContentMetadataConfig, fileUploadsUploadAndListContentTriggerIngest)
 		pr.Done()
 		if err != nil {
 			return err
@@ -113,6 +118,11 @@ func init() {
 
 	fileUploadsUploadAndListContentCmd.Flags().StringVarP(&fileUploadsUploadAndListContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
 	fileUploadsUploadAndListContentCmd.MarkFlagFilename("file")
+	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentDatasourceId, "datasource-id", "", "datasource id")
+	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentName, "name", "", "name")
+	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentDescription, "description", "", "description")
+	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentMetadataConfig, "metadata-config", "", "metadata config")
+	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentTriggerIngest, "trigger-ingest", "", "trigger ingest")
 	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentTrace, "trace", false, "stream parsing trace after upload")
 	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentBrowser, "browser", false, "open trace in console")
 }
