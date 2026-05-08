@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
 var (

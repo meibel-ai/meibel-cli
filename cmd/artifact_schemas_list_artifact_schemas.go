@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
-	"github.com/meibel-ai/meibel-cli/internal/output"
-	sdk "github.com/meibel-ai/meibel-go"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (

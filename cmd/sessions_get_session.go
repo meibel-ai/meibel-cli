@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/spf13/cobra"
-	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
 var sessionsGetSessionCmd = &cobra.Command{
@@ -15,13 +15,13 @@ var sessionsGetSessionCmd = &cobra.Command{
 Arguments:
   session-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel agents sessions get <session-id>",
+	Example: "meibel sessions get <session-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		sessionId := args[0]
 
-		result, err := client.Agents.Sessions.GetSession(ctx, sessionId)
+		result, err := client.Sessions.GetSession(ctx, sessionId)
 		if err != nil {
 			return err
 		}

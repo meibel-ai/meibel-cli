@@ -11,5 +11,5 @@ var sessionsCmd = &cobra.Command{
 }
 
 func init() {
-	agentsCmd.AddCommand(sessionsCmd)
+	rootCmd.AddCommand(sessionsCmd)
 }

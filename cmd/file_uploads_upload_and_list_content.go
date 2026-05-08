@@ -10,28 +10,28 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-cli/internal/output"
-	"github.com/meibel-ai/meibel-cli/internal/config"
-	"github.com/meibel-ai/meibel-cli/internal/tui"
-	"github.com/meibel-ai/meibel-cli/internal/upload"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	"github.com/meibel-ai/meibel-go/meibel/internal/config"
+	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
+	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
 )
 
 var (
-	fileUploadUploadAndListContentFile string
-	fileUploadUploadAndListContentTrace bool
-	fileUploadUploadAndListContentBrowser bool
+	fileUploadsUploadAndListContentFile string
+	fileUploadsUploadAndListContentTrace bool
+	fileUploadsUploadAndListContentBrowser bool
 )
 
-var fileUploadUploadAndListContentCmd = &cobra.Command{
+var fileUploadsUploadAndListContentCmd = &cobra.Command{
 	Use:   "and-list-content",
 	Short: "Upload Content (sync)",
 	Long:  `Upload Content (sync)`,
-	Example: "meibel datasources file-upload and-list-content",
+	Example: "meibel datasources file-uploads and-list-content",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		if fileUploadUploadAndListContentFile == "" {
+		if fileUploadsUploadAndListContentFile == "" {
 			home, _ := os.UserHomeDir()
 			if home == "" {
 				home, _ = os.Getwd()
@@ -45,16 +45,16 @@ var fileUploadUploadAndListContentCmd = &cobra.Command{
 				ShowSize(true).
 				ShowPermissions(false).
 				Height(15).
-				Value(&fileUploadUploadAndListContentFile)
+				Value(&fileUploadsUploadAndListContentFile)
 			if err := huh.NewForm(huh.NewGroup(picker)).Run(); err != nil {
 				return err
 			}
-			if fileUploadUploadAndListContentFile == "" {
+			if fileUploadsUploadAndListContentFile == "" {
 				return fmt.Errorf("no file selected")
 			}
 		}
 
-		f, err := os.Open(fileUploadUploadAndListContentFile)
+		f, err := os.Open(fileUploadsUploadAndListContentFile)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
@@ -64,10 +64,10 @@ var fileUploadUploadAndListContentCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("failed to stat file: %w", err)
 		}
-		fileName := filepath.Base(fileUploadUploadAndListContentFile)
+		fileName := filepath.Base(fileUploadsUploadAndListContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Datasources.FileUpload.UploadAndListContent(ctx, pr, fileName)
+		result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName)
 		pr.Done()
 		if err != nil {
 			return err
@@ -80,7 +80,7 @@ var fileUploadUploadAndListContentCmd = &cobra.Command{
 		b, _ := json.Marshal(result)
 		json.Unmarshal(b, &jr)
 
-		if fileUploadUploadAndListContentBrowser && jr.JobID != "" {
+		if fileUploadsUploadAndListContentBrowser && jr.JobID != "" {
 			consoleURL := deriveConsoleURL(config.GetString("base_url"))
 			projectID := config.GetString("project_id")
 			if consoleURL != "" && projectID != "" {
@@ -89,13 +89,13 @@ var fileUploadUploadAndListContentCmd = &cobra.Command{
 			}
 		}
 
-		if fileUploadUploadAndListContentTrace && jr.JobID != "" {
+		if fileUploadsUploadAndListContentTrace && jr.JobID != "" {
 			output.Print(result)
 
 			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 			defer cancel()
 
-			stream, err := client.Datasources.FileUpload.StreamUploadProgress(ctx, jr.JobID)
+			stream, err := client.Datasources.FileUploads.StreamUploadProgress(ctx, jr.JobID)
 			if err != nil {
 				return err
 			}
@@ -109,10 +109,10 @@ var fileUploadUploadAndListContentCmd = &cobra.Command{
 }
 
 func init() {
-	fileUploadCmd.AddCommand(fileUploadUploadAndListContentCmd)
+	fileUploadsCmd.AddCommand(fileUploadsUploadAndListContentCmd)
 
-	fileUploadUploadAndListContentCmd.Flags().StringVarP(&fileUploadUploadAndListContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
-	fileUploadUploadAndListContentCmd.MarkFlagFilename("file")
-	fileUploadUploadAndListContentCmd.Flags().BoolVar(&fileUploadUploadAndListContentTrace, "trace", false, "stream parsing trace after upload")
-	fileUploadUploadAndListContentCmd.Flags().BoolVar(&fileUploadUploadAndListContentBrowser, "browser", false, "open trace in console")
+	fileUploadsUploadAndListContentCmd.Flags().StringVarP(&fileUploadsUploadAndListContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
+	fileUploadsUploadAndListContentCmd.MarkFlagFilename("file")
+	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentTrace, "trace", false, "stream parsing trace after upload")
+	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentBrowser, "browser", false, "open trace in console")
 }

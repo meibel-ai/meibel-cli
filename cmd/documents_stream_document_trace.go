@@ -6,7 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"github.com/meibel-ai/meibel-cli/internal/tui"
+	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
 )
 
 var documentsStreamDocumentTraceCmd = &cobra.Command{

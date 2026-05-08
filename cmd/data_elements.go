@@ -6,8 +6,8 @@ import (
 
 var dataElementsCmd = &cobra.Command{
 	Use:   "data-elements",
-	Short: "Manage Data Elements",
-	Long:  `Commands for managing Data Elements resources.`,
+	Short: "Manage DataElements",
+	Long:  `Commands for managing DataElements resources.`,
 }
 
 func init() {

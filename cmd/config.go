@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
 var configCmd = &cobra.Command{

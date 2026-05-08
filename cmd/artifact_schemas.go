@@ -6,8 +6,8 @@ import (
 
 var artifactSchemasCmd = &cobra.Command{
 	Use:   "artifact-schemas",
-	Short: "Manage Artifact Schemas",
-	Long:  `Commands for managing Artifact Schemas resources.`,
+	Short: "Manage ArtifactSchemas",
+	Long:  `Commands for managing ArtifactSchemas resources.`,
 }
 
 func init() {

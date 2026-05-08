@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-cli/internal/output"
-	"github.com/meibel-ai/meibel-cli/internal/config"
-	"github.com/meibel-ai/meibel-cli/internal/tui"
-	"github.com/meibel-ai/meibel-cli/internal/upload"
+	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	"github.com/meibel-ai/meibel-go/meibel/internal/config"
+	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
+	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
 )
 
 var (
