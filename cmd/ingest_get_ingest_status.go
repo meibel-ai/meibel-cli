@@ -7,21 +7,21 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
-var fileUploadsTriggerIngestCmd = &cobra.Command{
-	Use:   "trigger-ingest <datasource-id>",
-	Short: "Trigger Ingest",
-	Long:  `Trigger Ingest
+var ingestGetIngestStatusCmd = &cobra.Command{
+	Use:   "get-status <datasource-id>",
+	Short: "Get Ingest Status",
+	Long:  `Get Ingest Status
 
 Arguments:
   datasource-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel datasources file-uploads trigger-ingest <datasource-id>",
+	Example: "meibel datasources ingest get-status <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		datasourceId := args[0]
 
-		result, err := client.Datasources.FileUploads.TriggerIngest(ctx, datasourceId)
+		result, err := client.Datasources.Ingest.GetIngestStatus(ctx, datasourceId)
 		if err != nil {
 			return err
 		}
@@ -31,6 +31,6 @@ Arguments:
 }
 
 func init() {
-	fileUploadsCmd.AddCommand(fileUploadsTriggerIngestCmd)
+	ingestCmd.AddCommand(ingestGetIngestStatusCmd)
 
 }
