@@ -21,7 +21,6 @@ var (
 	agentsSessionsSendChatMessageStreamTimeoutSeconds string
 	agentsSessionsSendChatMessageStreamIncludeThinking string
 	agentsSessionsSendChatMessageStreamIncludeToolActivity string
-	agentsSessionsSendChatMessageStreamFiles string
 	agentsSessionsSendChatMessageStreamTrace bool
 	agentsSessionsSendChatMessageStreamBrowser bool
 )
@@ -76,7 +75,7 @@ Arguments:
 		fileName := filepath.Base(agentsSessionsSendChatMessageStreamFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Agents.Sessions.SendChatMessageStream(ctx, sessionId, pr, fileName, agentsSessionsSendChatMessageStreamUserMessage, agentsSessionsSendChatMessageStreamTimeoutSeconds, agentsSessionsSendChatMessageStreamIncludeThinking, agentsSessionsSendChatMessageStreamIncludeToolActivity, agentsSessionsSendChatMessageStreamFiles)
+		result, err := client.Agents.Sessions.SendChatMessageStream(ctx, sessionId, pr, fileName, agentsSessionsSendChatMessageStreamUserMessage, agentsSessionsSendChatMessageStreamTimeoutSeconds, agentsSessionsSendChatMessageStreamIncludeThinking, agentsSessionsSendChatMessageStreamIncludeToolActivity)
 		pr.Done()
 		if err != nil {
 			return err
@@ -126,7 +125,6 @@ func init() {
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamTimeoutSeconds, "timeout-seconds", "", "timeout seconds")
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamIncludeThinking, "include-thinking", "", "include thinking")
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamIncludeToolActivity, "include-tool-activity", "", "include tool activity")
-	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamFiles, "files", "", "files")
 	agentsSessionsSendChatMessageStreamCmd.Flags().BoolVar(&agentsSessionsSendChatMessageStreamTrace, "trace", false, "stream parsing trace after upload")
 	agentsSessionsSendChatMessageStreamCmd.Flags().BoolVar(&agentsSessionsSendChatMessageStreamBrowser, "browser", false, "open trace in console")
 }
