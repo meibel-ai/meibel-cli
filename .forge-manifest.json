@@ -2,7 +2,7 @@
   "version": "1.0",
   "forgeVersion": "0.1.0",
   "target": "go-cli",
-  "timestamp": "2026-05-11T14:32:27.190Z",
+  "timestamp": "2026-05-11T15:32:12.780Z",
   "files": [
     "cmd/agents.go",
     "cmd/agents_create_agent.go",
