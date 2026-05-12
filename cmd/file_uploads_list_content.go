@@ -28,7 +28,7 @@ Arguments:
 
 		datasourceId := args[0]
 
-		opts := &sdk.ListContentOptions{}
+		opts := &sdk.FileUploadsListContentOptions{}
 		if fileUploadsListContentPrefix != "" {
 			opts.Prefix = &fileUploadsListContentPrefix
 		}

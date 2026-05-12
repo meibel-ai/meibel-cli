@@ -28,7 +28,7 @@ var confidenceScoringListScoringJobsCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		opts := &sdk.ListScoringJobsOptions{}
+		opts := &sdk.ConfidenceScoringListScoringJobsOptions{}
 		if confidenceScoringListScoringJobsAgentName != "" {
 			opts.AgentName = &confidenceScoringListScoringJobsAgentName
 		}

@@ -21,7 +21,7 @@ var confidenceScoringGetScoringJobsSummaryCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		opts := &sdk.GetScoringJobsSummaryOptions{}
+		opts := &sdk.ConfidenceScoringGetScoringJobsSummaryOptions{}
 		if confidenceScoringGetScoringJobsSummarySecondary != "" {
 			opts.Secondary = &confidenceScoringGetScoringJobsSummarySecondary
 		}
