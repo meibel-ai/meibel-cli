@@ -7,21 +7,21 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
-var batchExecutionsGetByIdCmd = &cobra.Command{
-	Use:   "get-by-id <execution-id>",
-	Short: "Get Batch Execution By Id",
-	Long:  `Get Batch Execution By Id
+var executionsCancelCmd = &cobra.Command{
+	Use:   "cancel <execution-id>",
+	Short: "Cancel Batch Execution",
+	Long:  `Cancel Batch Execution
 
 Arguments:
   execution-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-executions get-by-id <execution-id>",
+	Example: "meibel batches executions cancel <execution-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		executionId := args[0]
 
-		result, err := client.BatchExecutions.GetById(ctx, executionId)
+		result, err := client.Batches.Executions.Cancel(ctx, executionId)
 		if err != nil {
 			return err
 		}
@@ -31,6 +31,6 @@ Arguments:
 }
 
 func init() {
-	batchExecutionsCmd.AddCommand(batchExecutionsGetByIdCmd)
+	executionsCmd.AddCommand(executionsCancelCmd)
 
 }

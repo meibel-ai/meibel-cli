@@ -14,11 +14,11 @@ import (
 )
 
 var (
-	batchExecutionsUpdateByIdData string
-	batchExecutionsUpdateByIdInteractive bool
+	executionsUpdateByIdData string
+	executionsUpdateByIdInteractive bool
 )
 
-var batchExecutionsUpdateByIdCmd = &cobra.Command{
+var executionsUpdateByIdCmd = &cobra.Command{
 	Use:   "update-by-id <execution-id>",
 	Short: "Update Batch Execution By Id",
 	Long:  `Update Batch Execution By Id
@@ -26,7 +26,7 @@ var batchExecutionsUpdateByIdCmd = &cobra.Command{
 Arguments:
   execution-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-executions update-by-id <execution-id>",
+	Example: "meibel batches executions update-by-id <execution-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
@@ -34,15 +34,14 @@ Arguments:
 
 		var body sdk.UpdateBatchExecutionRequest
 
-		if batchExecutionsUpdateByIdData != "" {
-			if err := json.Unmarshal([]byte(batchExecutionsUpdateByIdData), &body); err != nil {
+		if executionsUpdateByIdData != "" {
+			if err := json.Unmarshal([]byte(executionsUpdateByIdData), &body); err != nil {
 				return fmt.Errorf("invalid JSON data: %w", err)
 			}
-		} else if batchExecutionsUpdateByIdInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
+		} else if executionsUpdateByIdInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
 			// Interactive form
 			form := huh.NewForm(
 				huh.NewGroup(
-					huh.NewInput().Title("AdditionalProperties").Description(""),
 				),
 			)
 
@@ -53,7 +52,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.BatchExecutions.UpdateById(ctx, executionId, body)
+		result, err := client.Batches.Executions.UpdateById(ctx, executionId, body)
 		if err != nil {
 			return err
 		}
@@ -63,8 +62,8 @@ Arguments:
 }
 
 func init() {
-	batchExecutionsCmd.AddCommand(batchExecutionsUpdateByIdCmd)
+	executionsCmd.AddCommand(executionsUpdateByIdCmd)
 
-	batchExecutionsUpdateByIdCmd.Flags().StringVarP(&batchExecutionsUpdateByIdData, "data", "d", "", "JSON data for the request body")
-	batchExecutionsUpdateByIdCmd.Flags().BoolVarP(&batchExecutionsUpdateByIdInteractive, "interactive", "i", false, "use interactive form input")
+	executionsUpdateByIdCmd.Flags().StringVarP(&executionsUpdateByIdData, "data", "d", "", "JSON data for the request body")
+	executionsUpdateByIdCmd.Flags().BoolVarP(&executionsUpdateByIdInteractive, "interactive", "i", false, "use interactive form input")
 }

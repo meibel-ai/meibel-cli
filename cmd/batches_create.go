@@ -14,25 +14,25 @@ import (
 )
 
 var (
-	batchDefinitionsCreateData string
-	batchDefinitionsCreateInteractive bool
+	batchesCreateData string
+	batchesCreateInteractive bool
 )
 
-var batchDefinitionsCreateCmd = &cobra.Command{
+var batchesCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create Batch Definition",
 	Long:  `Create Batch Definition`,
-	Example: "meibel batch-definitions create",
+	Example: "meibel batches create",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		var body sdk.CreateBatchDefinitionRequest
 
-		if batchDefinitionsCreateData != "" {
-			if err := json.Unmarshal([]byte(batchDefinitionsCreateData), &body); err != nil {
+		if batchesCreateData != "" {
+			if err := json.Unmarshal([]byte(batchesCreateData), &body); err != nil {
 				return fmt.Errorf("invalid JSON data: %w", err)
 			}
-		} else if batchDefinitionsCreateInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
+		} else if batchesCreateInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
 			// Interactive form
 			form := huh.NewForm(
 				huh.NewGroup(
@@ -49,7 +49,7 @@ var batchDefinitionsCreateCmd = &cobra.Command{
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.BatchDefinitions.Create(ctx, body)
+		result, err := client.Batches.Create(ctx, body)
 		if err != nil {
 			return err
 		}
@@ -59,8 +59,8 @@ var batchDefinitionsCreateCmd = &cobra.Command{
 }
 
 func init() {
-	batchDefinitionsCmd.AddCommand(batchDefinitionsCreateCmd)
+	batchesCmd.AddCommand(batchesCreateCmd)
 
-	batchDefinitionsCreateCmd.Flags().StringVarP(&batchDefinitionsCreateData, "data", "d", "", "JSON data for the request body")
-	batchDefinitionsCreateCmd.Flags().BoolVarP(&batchDefinitionsCreateInteractive, "interactive", "i", false, "use interactive form input")
+	batchesCreateCmd.Flags().StringVarP(&batchesCreateData, "data", "d", "", "JSON data for the request body")
+	batchesCreateCmd.Flags().BoolVarP(&batchesCreateInteractive, "interactive", "i", false, "use interactive form input")
 }

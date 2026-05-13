@@ -7,7 +7,7 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
-var batchExecutionsGetBatchRealtimeProgressCmd = &cobra.Command{
+var executionsGetRealtimeProgressCmd = &cobra.Command{
 	Use:   "get-realtime-progress <execution-id>",
 	Short: "Get Batch Realtime Progress",
 	Long:  `Get Batch Realtime Progress
@@ -15,13 +15,13 @@ var batchExecutionsGetBatchRealtimeProgressCmd = &cobra.Command{
 Arguments:
   execution-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-executions get-realtime-progress <execution-id>",
+	Example: "meibel batches executions get-realtime-progress <execution-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		executionId := args[0]
 
-		result, err := client.BatchExecutions.GetBatchRealtimeProgress(ctx, executionId)
+		result, err := client.Batches.Executions.GetRealtimeProgress(ctx, executionId)
 		if err != nil {
 			return err
 		}
@@ -31,6 +31,6 @@ Arguments:
 }
 
 func init() {
-	batchExecutionsCmd.AddCommand(batchExecutionsGetBatchRealtimeProgressCmd)
+	executionsCmd.AddCommand(executionsGetRealtimeProgressCmd)
 
 }

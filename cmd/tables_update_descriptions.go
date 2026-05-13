@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/charmbracelet/huh"
+	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
@@ -28,14 +32,24 @@ Arguments:
 
 		datasourceId := args[0]
 
-		var body []TagTableUpdateItem
+		var body sdk.UpdateTagTablesRequest
 
 		if tablesUpdateDescriptionsData != "" {
 			if err := json.Unmarshal([]byte(tablesUpdateDescriptionsData), &body); err != nil {
 				return fmt.Errorf("invalid JSON data: %w", err)
 			}
+		} else if tablesUpdateDescriptionsInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
+			// Interactive form
+			form := huh.NewForm(
+				huh.NewGroup(
+				),
+			)
+
+			if err := form.Run(); err != nil {
+				return err
+			}
 		} else {
-			return fmt.Errorf("--data flag required (interactive form not available for this type)")
+			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
 		result, err := client.Datasources.Tables.UpdateDescriptions(ctx, datasourceId, body)

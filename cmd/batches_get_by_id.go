@@ -7,7 +7,7 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
-var batchDefinitionsGetByIdCmd = &cobra.Command{
+var batchesGetByIdCmd = &cobra.Command{
 	Use:   "get-by-id <definition-id>",
 	Short: "Get Batch Definition By Id",
 	Long:  `Get Batch Definition By Id
@@ -15,13 +15,13 @@ var batchDefinitionsGetByIdCmd = &cobra.Command{
 Arguments:
   definition-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-definitions get-by-id <definition-id>",
+	Example: "meibel batches get-by-id <definition-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		definitionId := args[0]
 
-		result, err := client.BatchDefinitions.GetById(ctx, definitionId)
+		result, err := client.Batches.GetById(ctx, definitionId)
 		if err != nil {
 			return err
 		}
@@ -31,6 +31,6 @@ Arguments:
 }
 
 func init() {
-	batchDefinitionsCmd.AddCommand(batchDefinitionsGetByIdCmd)
+	batchesCmd.AddCommand(batchesGetByIdCmd)
 
 }

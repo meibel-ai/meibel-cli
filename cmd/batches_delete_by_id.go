@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	batchDefinitionsDeleteByIdForce bool
+	batchesDeleteByIdForce bool
 )
 
-var batchDefinitionsDeleteByIdCmd = &cobra.Command{
+var batchesDeleteByIdCmd = &cobra.Command{
 	Use:   "delete-by-id <definition-id>",
 	Short: "Delete Batch Definition By Id",
 	Long:  `Delete Batch Definition By Id
@@ -19,13 +19,13 @@ var batchDefinitionsDeleteByIdCmd = &cobra.Command{
 Arguments:
   definition-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-definitions delete-by-id <definition-id>",
+	Example: "meibel batches delete-by-id <definition-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		definitionId := args[0]
 
-		if !batchDefinitionsDeleteByIdForce {
+		if !batchesDeleteByIdForce {
 			fmt.Print("Are you sure? [y/N] ")
 			var confirm string
 			fmt.Scanln(&confirm)
@@ -35,7 +35,7 @@ Arguments:
 			}
 		}
 
-		err := client.BatchDefinitions.DeleteById(ctx, definitionId)
+		err := client.Batches.DeleteById(ctx, definitionId)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ Arguments:
 }
 
 func init() {
-	batchDefinitionsCmd.AddCommand(batchDefinitionsDeleteByIdCmd)
+	batchesCmd.AddCommand(batchesDeleteByIdCmd)
 
-	batchDefinitionsDeleteByIdCmd.Flags().BoolVarP(&batchDefinitionsDeleteByIdForce, "force", "f", false, "skip confirmation prompt")
+	batchesDeleteByIdCmd.Flags().BoolVarP(&batchesDeleteByIdForce, "force", "f", false, "skip confirmation prompt")
 }

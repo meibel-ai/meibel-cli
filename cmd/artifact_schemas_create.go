@@ -37,8 +37,6 @@ var artifactSchemasCreateCmd = &cobra.Command{
 			form := huh.NewForm(
 				huh.NewGroup(
 					huh.NewInput().Title("DisplayName").Description("Human-readable name of the artifact (letters, numbers, and spaces only). Converted to kebab-case internally.").Value(&body.DisplayName),
-					huh.NewInput().Title("SchemaDef").Description("Schema definition").Value(&body.SchemaDef),
-					huh.NewInput().Title("AdditionalProperties").Description(""),
 				),
 			)
 

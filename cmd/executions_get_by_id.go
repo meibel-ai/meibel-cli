@@ -7,21 +7,21 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
 )
 
-var batchExecutionsRetryFailedItemsCmd = &cobra.Command{
-	Use:   "retry-failed-items <execution-id>",
-	Short: "Retry Failed Items",
-	Long:  `Retry Failed Items
+var executionsGetByIdCmd = &cobra.Command{
+	Use:   "get-by-id <execution-id>",
+	Short: "Get Batch Execution By Id",
+	Long:  `Get Batch Execution By Id
 
 Arguments:
   execution-id: required`,
 	Args:  cobra.ExactArgs(1),
-	Example: "meibel batch-executions retry-failed-items <execution-id>",
+	Example: "meibel batches executions get-by-id <execution-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
 		executionId := args[0]
 
-		result, err := client.BatchExecutions.RetryFailedItems(ctx, executionId)
+		result, err := client.Batches.Executions.GetById(ctx, executionId)
 		if err != nil {
 			return err
 		}
@@ -31,6 +31,6 @@ Arguments:
 }
 
 func init() {
-	batchExecutionsCmd.AddCommand(batchExecutionsRetryFailedItemsCmd)
+	executionsCmd.AddCommand(executionsGetByIdCmd)
 
 }

@@ -38,7 +38,6 @@ var agentsCreateCmd = &cobra.Command{
 				huh.NewGroup(
 					huh.NewInput().Title("DisplayName").Description("Human-readable name of the agent (letters, numbers, and spaces only). Converted to kebab-case internally.").Value(&body.DisplayName),
 					huh.NewInput().Title("Instructions").Description("System prompt/instructions for the agent").Value(&body.Instructions),
-					huh.NewInput().Title("AdditionalProperties").Description(""),
 				),
 			)
 
