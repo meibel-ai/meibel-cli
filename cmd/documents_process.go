@@ -22,6 +22,7 @@ var (
 	documentsProcessFile string
 	documentsProcessTrace bool
 	documentsProcessBrowser bool
+	documentsProcessWait bool
 )
 
 var documentsProcessCmd = &cobra.Command{
@@ -68,6 +69,32 @@ var documentsProcessCmd = &cobra.Command{
 		}
 		fileName := filepath.Base(documentsProcessFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
+
+		if documentsProcessWait {
+			result, err := client.Documents.Transform(ctx, pr, fileName, opts)
+			pr.Done()
+			if err != nil {
+				return err
+			}
+
+			type jobResult struct {
+				JobID string `json:"job_id"`
+			}
+			var jr jobResult
+			b, _ := json.Marshal(result)
+			json.Unmarshal(b, &jr)
+
+			if documentsProcessBrowser && jr.JobID != "" {
+				consoleURL := deriveConsoleURL(config.GetString("base_url"))
+				projectID := config.GetString("project_id")
+				if consoleURL != "" && projectID != "" {
+					url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
+					openBrowser(url)
+				}
+			}
+
+			return output.Print(result)
+		}
 
 		result, err := client.Documents.Process(ctx, pr, fileName, opts)
 		pr.Done()
@@ -121,4 +148,5 @@ func init() {
 	documentsProcessCmd.MarkFlagFilename("file")
 	documentsProcessCmd.Flags().BoolVar(&documentsProcessTrace, "trace", false, "stream parsing trace after upload")
 	documentsProcessCmd.Flags().BoolVar(&documentsProcessBrowser, "browser", false, "open trace in console")
+	documentsProcessCmd.Flags().BoolVar(&documentsProcessWait, "wait", false, "wait for parsing to complete (synchronous)")
 }

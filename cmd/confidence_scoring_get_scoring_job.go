@@ -9,11 +9,11 @@ import (
 
 var confidenceScoringGetScoringJobCmd = &cobra.Command{
 	Use:   "get-job <job-id>",
-	Short: "Get Scoring Job",
-	Long:  `Get Scoring Job
+	Short: "Get a scoring job",
+	Long:  `Retrieve a single confidence scoring job by its ID, including its current status and score if completed.
 
 Arguments:
-  job-id: required`,
+  job-id: Unique identifier of the scoring job to retrieve.`,
 	Args:  cobra.ExactArgs(1),
 	Example: "meibel confidence-scoring get-job <job-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {

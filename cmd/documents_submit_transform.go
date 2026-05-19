@@ -5,51 +5,108 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/signal"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-go/meibel/internal/output"
-	sdk "github.com/meibel-ai/meibel-go/v2"
+	"github.com/meibel-ai/meibel-go/meibel/internal/config"
+	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
+	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
 )
 
 var (
-	documentsSubmitTransformData string
-	documentsSubmitTransformInteractive bool
+	documentsSubmitTransformFile string
+	documentsSubmitTransformArtifactSchema string
+	documentsSubmitTransformModel string
+	documentsSubmitTransformPrompt string
+	documentsSubmitTransformPromptId string
+	documentsSubmitTransformTimeoutSeconds string
+	documentsSubmitTransformTrace bool
+	documentsSubmitTransformBrowser bool
 )
 
 var documentsSubmitTransformCmd = &cobra.Command{
 	Use:   "submit-transform",
 	Short: "Submit a document transform (async)",
-	Long:  `Submit a document for AI-powered extraction and return immediately. Poll for completion via client.sessions.get(execution_id).`,
+	Long:  `Upload a document for AI-powered extraction and return immediately. Poll for completion via client.sessions.get(execution_id).`,
 	Example: "meibel documents submit-transform",
+	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		var body sdk.TransformDocumentRequest
-
-		if documentsSubmitTransformData != "" {
-			if err := json.Unmarshal([]byte(documentsSubmitTransformData), &body); err != nil {
-				return fmt.Errorf("invalid JSON data: %w", err)
+		if documentsSubmitTransformFile == "" {
+			home, _ := os.UserHomeDir()
+			if home == "" {
+				home, _ = os.Getwd()
 			}
-		} else if documentsSubmitTransformInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
-			// Interactive form
-			form := huh.NewForm(
-				huh.NewGroup(
-					huh.NewInput().Title("File").Description("File path, URL, or GCS URI to transform").Value(&body.File),
-				),
-			)
-
-			if err := form.Run(); err != nil {
+			picker := huh.NewFilePicker().
+				Title("Select a file").
+				CurrentDirectory(home).
+				FileAllowed(true).
+				DirAllowed(false).
+				ShowHidden(false).
+				ShowSize(true).
+				ShowPermissions(false).
+				Height(15).
+				Value(&documentsSubmitTransformFile)
+			if err := huh.NewForm(huh.NewGroup(picker)).Run(); err != nil {
 				return err
 			}
-		} else {
-			return fmt.Errorf("--data flag required in non-interactive mode")
+			if documentsSubmitTransformFile == "" {
+				return fmt.Errorf("no file selected")
+			}
 		}
 
-		result, err := client.Documents.SubmitTransform(ctx, body)
+		f, err := os.Open(documentsSubmitTransformFile)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer f.Close()
+
+		fi, err := f.Stat()
+		if err != nil {
+			return fmt.Errorf("failed to stat file: %w", err)
+		}
+		fileName := filepath.Base(documentsSubmitTransformFile)
+		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
+
+		result, err := client.Documents.SubmitTransform(ctx, pr, fileName, documentsSubmitTransformArtifactSchema, documentsSubmitTransformModel, documentsSubmitTransformPrompt, documentsSubmitTransformPromptId, documentsSubmitTransformTimeoutSeconds)
+		pr.Done()
 		if err != nil {
 			return err
+		}
+
+		type jobResult struct {
+			JobID string `json:"job_id"`
+		}
+		var jr jobResult
+		b, _ := json.Marshal(result)
+		json.Unmarshal(b, &jr)
+
+		if documentsSubmitTransformBrowser && jr.JobID != "" {
+			consoleURL := deriveConsoleURL(config.GetString("base_url"))
+			projectID := config.GetString("project_id")
+			if consoleURL != "" && projectID != "" {
+				url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
+				openBrowser(url)
+			}
+		}
+
+		if documentsSubmitTransformTrace && jr.JobID != "" {
+			output.Print(result)
+
+			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+			defer cancel()
+
+			stream, err := client.Documents.StreamTrace(ctx, jr.JobID)
+			if err != nil {
+				return err
+			}
+			defer stream.Close()
+
+			return tui.StreamEvents(ctx, stream)
 		}
 
 		return output.Print(result)
@@ -59,6 +116,13 @@ var documentsSubmitTransformCmd = &cobra.Command{
 func init() {
 	documentsCmd.AddCommand(documentsSubmitTransformCmd)
 
-	documentsSubmitTransformCmd.Flags().StringVarP(&documentsSubmitTransformData, "data", "d", "", "JSON data for the request body")
-	documentsSubmitTransformCmd.Flags().BoolVarP(&documentsSubmitTransformInteractive, "interactive", "i", false, "use interactive form input")
+	documentsSubmitTransformCmd.Flags().StringVarP(&documentsSubmitTransformFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
+	documentsSubmitTransformCmd.MarkFlagFilename("file")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformArtifactSchema, "artifact-schema", "", "artifact schema")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformModel, "model", "", "model")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPrompt, "prompt", "", "prompt")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPromptId, "prompt-id", "", "prompt id")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformTimeoutSeconds, "timeout-seconds", "", "timeout seconds")
+	documentsSubmitTransformCmd.Flags().BoolVar(&documentsSubmitTransformTrace, "trace", false, "stream parsing trace after upload")
+	documentsSubmitTransformCmd.Flags().BoolVar(&documentsSubmitTransformBrowser, "browser", false, "open trace in console")
 }

@@ -11,10 +11,10 @@ import (
 var (
 	confidenceScoringListScoringJobsAgentName string
 	confidenceScoringListScoringJobsAgentVersion string
-	confidenceScoringListScoringJobsAgentExecutionId string
+	confidenceScoringListScoringJobsAgentSessionId string
 	confidenceScoringListScoringJobsAgentWorkflowName string
 	confidenceScoringListScoringJobsAgentWorkflowVersion string
-	confidenceScoringListScoringJobsAgentWorkflowExecutionId string
+	confidenceScoringListScoringJobsAgentWorkflowSessionId string
 	confidenceScoringListScoringJobsToolId string
 	confidenceScoringListScoringJobsToolInstanceId string
 	confidenceScoringListScoringJobsToolExecutionId string
@@ -22,8 +22,8 @@ var (
 
 var confidenceScoringListScoringJobsCmd = &cobra.Command{
 	Use:   "list-jobs",
-	Short: "List Scoring Jobs",
-	Long:  `List Scoring Jobs`,
+	Short: "List scoring jobs",
+	Long:  `List confidence scoring jobs, optionally filtered by identity context fields. All filters are combined with AND logic.`,
 	Example: "meibel confidence-scoring list-jobs --agent-name=<value> --agent-version=<value>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
@@ -35,8 +35,8 @@ var confidenceScoringListScoringJobsCmd = &cobra.Command{
 		if confidenceScoringListScoringJobsAgentVersion != "" {
 			opts.AgentVersion = &confidenceScoringListScoringJobsAgentVersion
 		}
-		if confidenceScoringListScoringJobsAgentExecutionId != "" {
-			opts.AgentExecutionId = &confidenceScoringListScoringJobsAgentExecutionId
+		if confidenceScoringListScoringJobsAgentSessionId != "" {
+			opts.AgentSessionId = &confidenceScoringListScoringJobsAgentSessionId
 		}
 		if confidenceScoringListScoringJobsAgentWorkflowName != "" {
 			opts.AgentWorkflowName = &confidenceScoringListScoringJobsAgentWorkflowName
@@ -44,8 +44,8 @@ var confidenceScoringListScoringJobsCmd = &cobra.Command{
 		if confidenceScoringListScoringJobsAgentWorkflowVersion != "" {
 			opts.AgentWorkflowVersion = &confidenceScoringListScoringJobsAgentWorkflowVersion
 		}
-		if confidenceScoringListScoringJobsAgentWorkflowExecutionId != "" {
-			opts.AgentWorkflowExecutionId = &confidenceScoringListScoringJobsAgentWorkflowExecutionId
+		if confidenceScoringListScoringJobsAgentWorkflowSessionId != "" {
+			opts.AgentWorkflowSessionId = &confidenceScoringListScoringJobsAgentWorkflowSessionId
 		}
 		if confidenceScoringListScoringJobsToolId != "" {
 			opts.ToolId = &confidenceScoringListScoringJobsToolId
@@ -69,13 +69,13 @@ var confidenceScoringListScoringJobsCmd = &cobra.Command{
 func init() {
 	confidenceScoringCmd.AddCommand(confidenceScoringListScoringJobsCmd)
 
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentName, "agent-name", "", "", "The agent-name parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentVersion, "agent-version", "", "", "The agent-version parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentExecutionId, "agent-execution-id", "", "", "The agent-execution-id parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowName, "agent-workflow-name", "", "", "The agent-workflow-name parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowVersion, "agent-workflow-version", "", "", "The agent-workflow-version parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowExecutionId, "agent-workflow-execution-id", "", "", "The agent-workflow-execution-id parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolId, "tool-id", "", "", "The tool-id parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolInstanceId, "tool-instance-id", "", "", "The tool-instance-id parameter")
-	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolExecutionId, "tool-execution-id", "", "", "The tool-execution-id parameter")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentName, "agent-name", "", "", "Filter by agent name.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentVersion, "agent-version", "", "", "Filter by agent version.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentSessionId, "agent-session-id", "", "", "Filter by agent session ID.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowName, "agent-workflow-name", "", "", "Filter by workflow name.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowVersion, "agent-workflow-version", "", "", "Filter by workflow version.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsAgentWorkflowSessionId, "agent-workflow-session-id", "", "", "Filter by workflow session ID.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolId, "tool-id", "", "", "Filter by tool identifier.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolInstanceId, "tool-instance-id", "", "", "Filter by tool instance identifier.")
+	confidenceScoringListScoringJobsCmd.Flags().StringVarP(&confidenceScoringListScoringJobsToolExecutionId, "tool-execution-id", "", "", "Filter by tool execution identifier.")
 }
