@@ -14,27 +14,30 @@ import (
 	"github.com/meibel-ai/meibel-go/meibel/internal/config"
 	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
 	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
+	fileUploadsUploadAndListContentTriggerIngest bool
 	fileUploadsUploadAndListContentFile string
-	fileUploadsUploadAndListContentDatasourceId string
-	fileUploadsUploadAndListContentName string
-	fileUploadsUploadAndListContentDescription string
-	fileUploadsUploadAndListContentMetadataConfig string
-	fileUploadsUploadAndListContentTriggerIngest string
 	fileUploadsUploadAndListContentTrace bool
 	fileUploadsUploadAndListContentBrowser bool
 )
 
 var fileUploadsUploadAndListContentCmd = &cobra.Command{
-	Use:   "and-list-content",
+	Use:   "and-list-content <datasource-id>",
 	Short: "Upload Content (sync)",
-	Long:  `Upload Content (sync)`,
-	Example: "meibel datasources file-uploads and-list-content",
+	Long:  `Upload Content (sync)
+
+Arguments:
+  datasource-id: required`,
+	Args:  cobra.ExactArgs(1),
+	Example: "meibel datasources file-uploads and-list-content <datasource-id> --trigger-ingest=<value>",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
+
+		datasourceId := args[0]
 
 		if fileUploadsUploadAndListContentFile == "" {
 			home, _ := os.UserHomeDir()
@@ -72,7 +75,7 @@ var fileUploadsUploadAndListContentCmd = &cobra.Command{
 		fileName := filepath.Base(fileUploadsUploadAndListContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, pr, fileName, fileUploadsUploadAndListContentDatasourceId, fileUploadsUploadAndListContentName, fileUploadsUploadAndListContentDescription, fileUploadsUploadAndListContentMetadataConfig, fileUploadsUploadAndListContentTriggerIngest)
+		result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, datasourceId, pr, fileName, opts)
 		pr.Done()
 		if err != nil {
 			return err
@@ -116,13 +119,9 @@ var fileUploadsUploadAndListContentCmd = &cobra.Command{
 func init() {
 	fileUploadsCmd.AddCommand(fileUploadsUploadAndListContentCmd)
 
+	fileUploadsUploadAndListContentCmd.Flags().BoolVarP(&fileUploadsUploadAndListContentTriggerIngest, "trigger-ingest", "", false, "Start ingestion after upload completes. Returns ingest_url to poll for status.")
 	fileUploadsUploadAndListContentCmd.Flags().StringVarP(&fileUploadsUploadAndListContentFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
 	fileUploadsUploadAndListContentCmd.MarkFlagFilename("file")
-	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentDatasourceId, "datasource-id", "", "datasource id")
-	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentName, "name", "", "name")
-	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentDescription, "description", "", "description")
-	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentMetadataConfig, "metadata-config", "", "metadata config")
-	fileUploadsUploadAndListContentCmd.Flags().StringVar(&fileUploadsUploadAndListContentTriggerIngest, "trigger-ingest", "", "trigger ingest")
 	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentTrace, "trace", false, "stream parsing trace after upload")
 	fileUploadsUploadAndListContentCmd.Flags().BoolVar(&fileUploadsUploadAndListContentBrowser, "browser", false, "open trace in console")
 }

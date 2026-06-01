@@ -19,20 +19,20 @@ var (
 )
 
 var dataElementsUpdateCmd = &cobra.Command{
-	Use:   "update <datasource-id> <data-element-id>",
+	Use:   "update <data-element-id> <datasource-id>",
 	Short: "Update Data Element",
 	Long:  `Update Data Element
 
 Arguments:
-  datasource-id: required
-  data-element-id: required`,
+  data-element-id: required
+  datasource-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel datasources data-elements update <datasource-id> <data-element-id>",
+	Example: "meibel datasources data-elements update <data-element-id> <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		datasourceId := args[0]
-		dataElementId := args[1]
+		dataElementId := args[0]
+		datasourceId := args[1]
 
 		var body sdk.UpdateDataElementRequest
 
@@ -54,7 +54,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.Datasources.DataElements.Update(ctx, datasourceId, dataElementId, body)
+		result, err := client.Datasources.DataElements.Update(ctx, dataElementId, datasourceId, body)
 		if err != nil {
 			return err
 		}

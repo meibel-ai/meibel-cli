@@ -10,26 +10,26 @@ import (
 )
 
 var downloadsStreamProgressCmd = &cobra.Command{
-	Use:   "stream-progress <datasource-id> <job-id>",
+	Use:   "stream-progress <job-id> <datasource-id>",
 	Short: "Stream Download Progress",
 	Long:  `Stream Download Progress
 
 Arguments:
-  datasource-id: required
-  job-id: required`,
+  job-id: required
+  datasource-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel datasources downloads stream-progress <datasource-id> <job-id>",
+	Example: "meibel datasources downloads stream-progress <job-id> <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		datasourceId := args[0]
-		jobId := args[1]
+		jobId := args[0]
+		datasourceId := args[1]
 
 		// Set up signal handling for graceful shutdown
 		ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 		defer cancel()
 
-		stream, err := client.Datasources.Downloads.StreamProgress(ctx, datasourceId, jobId)
+		stream, err := client.Datasources.Downloads.StreamProgress(ctx, jobId, datasourceId)
 		if err != nil {
 			return err
 		}

@@ -8,22 +8,22 @@ import (
 )
 
 var downloadsDownloadFileCmd = &cobra.Command{
-	Use:   "file <datasource-id> <job-id>",
+	Use:   "file <job-id> <datasource-id>",
 	Short: "Download File",
 	Long:  `Download File
 
 Arguments:
-  datasource-id: required
-  job-id: required`,
+  job-id: required
+  datasource-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel datasources downloads file <datasource-id> <job-id>",
+	Example: "meibel datasources downloads file <job-id> <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		datasourceId := args[0]
-		jobId := args[1]
+		jobId := args[0]
+		datasourceId := args[1]
 
-		result, err := client.Datasources.Downloads.DownloadFile(ctx, datasourceId, jobId)
+		result, err := client.Datasources.Downloads.DownloadFile(ctx, jobId, datasourceId)
 		if err != nil {
 			return err
 		}

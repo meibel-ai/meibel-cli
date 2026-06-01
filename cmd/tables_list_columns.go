@@ -8,22 +8,22 @@ import (
 )
 
 var tablesListColumnsCmd = &cobra.Command{
-	Use:   "list-columns <datasource-id> <table-name>",
+	Use:   "list-columns <table-name> <datasource-id>",
 	Short: "List Columns",
 	Long:  `List Columns
 
 Arguments:
-  datasource-id: required
-  table-name: required`,
+  table-name: required
+  datasource-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel datasources tables list-columns <datasource-id> <table-name>",
+	Example: "meibel datasources tables list-columns <table-name> <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		datasourceId := args[0]
-		tableName := args[1]
+		tableName := args[0]
+		datasourceId := args[1]
 
-		result, err := client.Datasources.Tables.ListColumns(ctx, datasourceId, tableName)
+		result, err := client.Datasources.Tables.ListColumns(ctx, tableName, datasourceId)
 		if err != nil {
 			return err
 		}

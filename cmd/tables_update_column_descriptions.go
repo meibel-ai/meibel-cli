@@ -19,20 +19,20 @@ var (
 )
 
 var tablesUpdateColumnDescriptionsCmd = &cobra.Command{
-	Use:   "update-column-descriptions <datasource-id> <table-name>",
+	Use:   "update-column-descriptions <table-name> <datasource-id>",
 	Short: "Update Column Descriptions",
 	Long:  `Update Column Descriptions
 
 Arguments:
-  datasource-id: required
-  table-name: required`,
+  table-name: required
+  datasource-id: required`,
 	Args:  cobra.ExactArgs(2),
-	Example: "meibel datasources tables update-column-descriptions <datasource-id> <table-name>",
+	Example: "meibel datasources tables update-column-descriptions <table-name> <datasource-id>",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		datasourceId := args[0]
-		tableName := args[1]
+		tableName := args[0]
+		datasourceId := args[1]
 
 		var body sdk.UpdateTagColumnsRequest
 
@@ -54,7 +54,7 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
-		result, err := client.Datasources.Tables.UpdateColumnDescriptions(ctx, datasourceId, tableName, body)
+		result, err := client.Datasources.Tables.UpdateColumnDescriptions(ctx, tableName, datasourceId, body)
 		if err != nil {
 			return err
 		}

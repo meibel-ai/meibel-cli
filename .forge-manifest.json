@@ -2,7 +2,7 @@
   "version": "1.0",
   "forgeVersion": "0.1.0",
   "target": "go-cli",
-  "timestamp": "2026-05-19T19:26:23.079Z",
+  "timestamp": "2026-06-01T18:12:57.632Z",
   "files": [
     "cmd/agents.go",
     "cmd/agents_create.go",
@@ -35,7 +35,6 @@
     "cmd/completion.go",
     "cmd/confidence_scoring.go",
     "cmd/confidence_scoring_get_scoring_job.go",
-    "cmd/confidence_scoring_get_scoring_jobs_summary.go",
     "cmd/confidence_scoring_list_scoring_jobs.go",
     "cmd/config.go",
     "cmd/data_elements.go",
