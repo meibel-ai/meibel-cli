@@ -74,7 +74,7 @@ var documentsTransformCmd = &cobra.Command{
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
 		if documentsTransformWait {
-			result, err := client.Documents.SubmitTransform(ctx, pr, fileName, documentsTransformArtifactSchema, documentsTransformModel, documentsTransformPrompt, documentsTransformPromptId, documentsTransformTimeoutSeconds)
+			result, err := client.Documents.SubmitDeepTransform(ctx, pr, fileName, documentsTransformArtifactSchema, documentsTransformModel, documentsTransformPrompt, documentsTransformPromptId, documentsTransformTimeoutSeconds)
 			pr.Done()
 			if err != nil {
 				return err

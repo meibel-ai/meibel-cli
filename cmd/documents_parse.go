@@ -68,7 +68,7 @@ var documentsParseCmd = &cobra.Command{
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
 		if documentsParseWait {
-			result, err := client.Documents.Process(ctx, pr, fileName)
+			result, err := client.Documents.SubmitDeepTransform(ctx, pr, fileName)
 			pr.Done()
 			if err != nil {
 				return err
@@ -90,10 +90,7 @@ var documentsParseCmd = &cobra.Command{
 				}
 			}
 
-			if !output.PrintMarkdown(result, "result") {
-				return output.Print(result)
-			}
-			return nil
+			return output.Print(result)
 		}
 
 		result, err := client.Documents.Parse(ctx, pr, fileName)

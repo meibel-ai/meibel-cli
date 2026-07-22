@@ -10,7 +10,7 @@ import (
 
 var (
 	agentsSessionsListOffset int64
-	agentsSessionsListLimit string
+	agentsSessionsListLimit int64
 	agentsSessionsListSortBy string
 	agentsSessionsListSortOrder string
 	agentsSessionsListStatus string
@@ -34,7 +34,7 @@ Arguments:
 		if agentsSessionsListOffset != 0 {
 			opts.Offset = &agentsSessionsListOffset
 		}
-		if agentsSessionsListLimit != "" {
+		if agentsSessionsListLimit != 0 {
 			opts.Limit = &agentsSessionsListLimit
 		}
 		if agentsSessionsListSortBy != "" {
@@ -65,7 +65,7 @@ func init() {
 	agentsSessionsCmd.AddCommand(agentsSessionsListCmd)
 
 	agentsSessionsListCmd.Flags().Int64VarP(&agentsSessionsListOffset, "offset", "", 0, "Number of items to skip")
-	agentsSessionsListCmd.Flags().StringVarP(&agentsSessionsListLimit, "limit", "", "", "Maximum number of items to return")
+	agentsSessionsListCmd.Flags().Int64VarP(&agentsSessionsListLimit, "limit", "", 10, "Maximum number of items to return")
 	agentsSessionsListCmd.Flags().StringVarP(&agentsSessionsListSortBy, "sort-by", "", "start_time", "Field to sort by: start_time, status")
 	agentsSessionsListCmd.Flags().StringVarP(&agentsSessionsListSortOrder, "sort-order", "", "desc", "Sort order: asc or desc")
 	agentsSessionsListCmd.Flags().StringVarP(&agentsSessionsListStatus, "status", "", "", "Filter by execution status: RUNNING, COMPLETED, FAILED, CANCELED, TERMINATED")
