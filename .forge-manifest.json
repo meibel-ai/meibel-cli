@@ -2,7 +2,7 @@
   "version": "1.0",
   "forgeVersion": "0.1.0",
   "target": "go-cli",
-  "timestamp": "2026-08-10T08:11:44.380Z",
+  "timestamp": "2026-08-10T08:16:12.115Z",
   "files": [
     ".github/workflows/release.yml",
     ".goreleaser.yaml",
