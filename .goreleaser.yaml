@@ -50,6 +50,10 @@ homebrew_casks:
     license: MIT
     binaries:
       - meibel
+    hooks:
+      pre:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/meibel"]
     generate_completions_from_executable:
       executable: meibel
       args: ["completion"]
