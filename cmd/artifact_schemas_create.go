@@ -4,18 +4,21 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/charmbracelet/huh"
-	"golang.org/x/term"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/output"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
-	artifactSchemasCreateData string
-	artifactSchemasCreateInteractive bool
+	artifactSchemasCreateDisplayName string
+	artifactSchemasCreateType string
+	artifactSchemasCreateDescription string
+	artifactSchemasCreateRequired string
+	artifactSchemasCreateSchema string
+	artifactSchemasCreateMaxSizeBytes string
+	artifactSchemasCreateStorageStrategy string
+	artifactSchemasCreateAdditionalProperties string
 )
 
 var artifactSchemasCreateCmd = &cobra.Command{
@@ -26,28 +29,34 @@ var artifactSchemasCreateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		var body sdk.CreateAgentArtifactRequest
-
-		if artifactSchemasCreateData != "" {
-			if err := json.Unmarshal([]byte(artifactSchemasCreateData), &body); err != nil {
-				return fmt.Errorf("invalid JSON data: %w", err)
+		opts := sdk.ArtifactSchemasCreateOptions{}
+		opts.DisplayName = artifactSchemasCreateDisplayName
+		if artifactSchemasCreateType != "" {
+			v := sdk.ArtifactType(artifactSchemasCreateType)
+			opts.Type = &v
+		}
+		if artifactSchemasCreateDescription != "" {
+			opts.Description = artifactSchemasCreateDescription
+		}
+		if artifactSchemasCreateRequired != "" {
+			opts.Required = artifactSchemasCreateRequired
+		}
+		opts.Schema = artifactSchemasCreateSchema
+		if artifactSchemasCreateMaxSizeBytes != "" {
+			opts.MaxSizeBytes = artifactSchemasCreateMaxSizeBytes
+		}
+		if artifactSchemasCreateStorageStrategy != "" {
+			opts.StorageStrategy = artifactSchemasCreateStorageStrategy
+		}
+		if artifactSchemasCreateAdditionalProperties != "" {
+			var v map[string]interface{}
+			if err := json.Unmarshal([]byte(artifactSchemasCreateAdditionalProperties), &v); err != nil {
+				return fmt.Errorf("invalid JSON for --additional-properties: %w", err)
 			}
-		} else if artifactSchemasCreateInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
-			// Interactive form
-			form := huh.NewForm(
-				huh.NewGroup(
-					huh.NewInput().Title("DisplayName").Description("Human-readable name of the artifact (letters, numbers, and spaces only). Converted to kebab-case internally.").Value(&body.DisplayName),
-				),
-			)
-
-			if err := form.Run(); err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("--data flag required in non-interactive mode")
+			opts.AdditionalProperties = v
 		}
 
-		result, err := client.ArtifactSchemas.Create(ctx, body)
+		result, err := client.ArtifactSchemas.Create(ctx, opts)
 		if err != nil {
 			return err
 		}
@@ -59,6 +68,14 @@ var artifactSchemasCreateCmd = &cobra.Command{
 func init() {
 	artifactSchemasCmd.AddCommand(artifactSchemasCreateCmd)
 
-	artifactSchemasCreateCmd.Flags().StringVarP(&artifactSchemasCreateData, "data", "d", "", "JSON data for the request body")
-	artifactSchemasCreateCmd.Flags().BoolVarP(&artifactSchemasCreateInteractive, "interactive", "i", false, "use interactive form input")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateDisplayName, "display-name", "", "Human-readable name of the artifact (letters, numbers, and spaces only). Converted to kebab-case internally.")
+	artifactSchemasCreateCmd.MarkFlagRequired("display-name")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateType, "type", "", "Artifact type (json, markdown, csv, yaml, text, html, pdf)")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateDescription, "description", "", "Description of the artifact")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateRequired, "required", "", "Whether agent must produce this artifact")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateSchema, "schema", "", "Schema definition")
+	artifactSchemasCreateCmd.MarkFlagRequired("schema")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateMaxSizeBytes, "max-size-bytes", "", "Maximum artifact size in bytes")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateStorageStrategy, "storage-strategy", "", "Storage strategy (inline, gcs, auto)")
+	artifactSchemasCreateCmd.Flags().StringVar(&artifactSchemasCreateAdditionalProperties, "additional-properties", "", "AdditionalProperties")
 }

@@ -1,0 +1,32 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Provision tap deploy key
+        run: |
+          key_path="$RUNNER_TEMP/tap_deploy_key"
+          install -m 600 /dev/null "$key_path"
+          printf '%s\n' "${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}" > "$key_path"
+          echo "HOMEBREW_TAP_DEPLOY_KEY=$key_path" >> "$GITHUB_ENV"
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

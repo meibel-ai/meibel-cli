@@ -10,10 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
-	"github.com/meibel-ai/meibel-go/meibel/internal/config"
-	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
-	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/config"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
+	"github.com/meibel-ai/meibel-cli/internal/upload"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
@@ -73,8 +74,10 @@ Arguments:
 		fileName := filepath.Base(fileUploadsUploadContentFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
+		syncOpts := &sdk.FileUploadsUploadAndListContentOptions{}
+
 		if fileUploadsUploadContentWait {
-			result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, datasourceId, pr, fileName)
+			result, err := client.Datasources.FileUploads.UploadAndListContent(ctx, datasourceId, pr, fileName, syncOpts)
 			pr.Done()
 			if err != nil {
 				return err

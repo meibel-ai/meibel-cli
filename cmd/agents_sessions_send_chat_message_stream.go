@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,9 +9,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-go/meibel/internal/config"
-	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
-	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
+	"github.com/meibel-ai/meibel-cli/internal/upload"
 )
 
 var (
@@ -22,8 +20,6 @@ var (
 	agentsSessionsSendChatMessageStreamIncludeThinking string
 	agentsSessionsSendChatMessageStreamIncludeToolActivity string
 	agentsSessionsSendChatMessageStreamFiles string
-	agentsSessionsSendChatMessageStreamTrace bool
-	agentsSessionsSendChatMessageStreamBrowser bool
 )
 
 var agentsSessionsSendChatMessageStreamCmd = &cobra.Command{
@@ -76,44 +72,17 @@ Arguments:
 		fileName := filepath.Base(agentsSessionsSendChatMessageStreamFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
-		result, err := client.Agents.Sessions.SendChatMessageStream(ctx, sessionId, pr, fileName, agentsSessionsSendChatMessageStreamUserMessage, agentsSessionsSendChatMessageStreamTimeoutSeconds, agentsSessionsSendChatMessageStreamIncludeThinking, agentsSessionsSendChatMessageStreamIncludeToolActivity, agentsSessionsSendChatMessageStreamFiles)
+		ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
+		defer cancel()
+
+		stream, err := client.Agents.Sessions.SendChatMessageStream(ctx, sessionId, pr, fileName, agentsSessionsSendChatMessageStreamUserMessage, agentsSessionsSendChatMessageStreamTimeoutSeconds, agentsSessionsSendChatMessageStreamIncludeThinking, agentsSessionsSendChatMessageStreamIncludeToolActivity, agentsSessionsSendChatMessageStreamFiles)
 		pr.Done()
 		if err != nil {
 			return err
 		}
+		defer stream.Close()
 
-		type jobResult struct {
-			JobID string `json:"job_id"`
-		}
-		var jr jobResult
-		b, _ := json.Marshal(result)
-		json.Unmarshal(b, &jr)
-
-		if agentsSessionsSendChatMessageStreamBrowser && jr.JobID != "" {
-			consoleURL := deriveConsoleURL(config.GetString("base_url"))
-			projectID := config.GetString("project_id")
-			if consoleURL != "" && projectID != "" {
-				url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
-				openBrowser(url)
-			}
-		}
-
-		if agentsSessionsSendChatMessageStreamTrace && jr.JobID != "" {
-			output.Print(result)
-
-			ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
-			defer cancel()
-
-			stream, err := client.Agents.Sessions.SendChatMessageStream(ctx, jr.JobID)
-			if err != nil {
-				return err
-			}
-			defer stream.Close()
-
-			return tui.StreamEvents(ctx, stream)
-		}
-
-		return output.Print(result)
+		return tui.StreamEvents(ctx, stream)
 	},
 }
 
@@ -127,6 +96,4 @@ func init() {
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamIncludeThinking, "include-thinking", "", "include thinking")
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamIncludeToolActivity, "include-tool-activity", "", "include tool activity")
 	agentsSessionsSendChatMessageStreamCmd.Flags().StringVar(&agentsSessionsSendChatMessageStreamFiles, "files", "", "files")
-	agentsSessionsSendChatMessageStreamCmd.Flags().BoolVar(&agentsSessionsSendChatMessageStreamTrace, "trace", false, "stream parsing trace after upload")
-	agentsSessionsSendChatMessageStreamCmd.Flags().BoolVar(&agentsSessionsSendChatMessageStreamBrowser, "browser", false, "open trace in console")
 }

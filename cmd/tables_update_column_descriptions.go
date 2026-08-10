@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
 	"golang.org/x/term"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/output"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 

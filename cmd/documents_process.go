@@ -10,10 +10,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
-	"github.com/meibel-ai/meibel-go/meibel/internal/config"
-	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
-	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/config"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
+	"github.com/meibel-ai/meibel-cli/internal/upload"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -70,8 +70,13 @@ var documentsProcessCmd = &cobra.Command{
 		fileName := filepath.Base(documentsProcessFile)
 		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
 
+		opts := &sdk.DocumentsProcessOptions{}
+		if documentsProcessFormat != "" {
+			opts.Format = &documentsProcessFormat
+		}
+
 		if documentsProcessWait {
-			result, err := client.Documents.SubmitDeepTransform(ctx, pr, fileName, opts)
+			result, err := client.Documents.SubmitDeepTransform(ctx, sdk.DocumentsSubmitDeepTransformOptions{File: documentsProcessFile})
 			pr.Done()
 			if err != nil {
 				return err

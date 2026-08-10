@@ -2,20 +2,17 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/charmbracelet/huh"
-	"golang.org/x/term"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/output"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
-	datasourcesCreateData string
-	datasourcesCreateInteractive bool
+	datasourcesCreateName string
+	datasourcesCreateDescription string
+	datasourcesCreateConnector string
+	datasourcesCreateMetadataConfig string
 )
 
 var datasourcesCreateCmd = &cobra.Command{
@@ -26,29 +23,19 @@ var datasourcesCreateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
-		var body sdk.CreateDatasourceRequest
-
-		if datasourcesCreateData != "" {
-			if err := json.Unmarshal([]byte(datasourcesCreateData), &body); err != nil {
-				return fmt.Errorf("invalid JSON data: %w", err)
-			}
-		} else if datasourcesCreateInteractive || term.IsTerminal(int(os.Stdin.Fd())) {
-			// Interactive form
-			form := huh.NewForm(
-				huh.NewGroup(
-					huh.NewInput().Title("Name").Description("Human-readable datasource name").Value(&body.Name),
-					huh.NewInput().Title("Description").Description("What this datasource contains"),
-				),
-			)
-
-			if err := form.Run(); err != nil {
-				return err
-			}
-		} else {
-			return fmt.Errorf("--data flag required in non-interactive mode")
+		opts := sdk.DatasourcesCreateOptions{}
+		opts.Name = datasourcesCreateName
+		if datasourcesCreateDescription != "" {
+			opts.Description = &datasourcesCreateDescription
+		}
+		if datasourcesCreateConnector != "" {
+			opts.Connector = datasourcesCreateConnector
+		}
+		if datasourcesCreateMetadataConfig != "" {
+			opts.MetadataConfig = datasourcesCreateMetadataConfig
 		}
 
-		result, err := client.Datasources.Create(ctx, body)
+		result, err := client.Datasources.Create(ctx, opts)
 		if err != nil {
 			return err
 		}
@@ -60,6 +47,9 @@ var datasourcesCreateCmd = &cobra.Command{
 func init() {
 	datasourcesCmd.AddCommand(datasourcesCreateCmd)
 
-	datasourcesCreateCmd.Flags().StringVarP(&datasourcesCreateData, "data", "d", "", "JSON data for the request body")
-	datasourcesCreateCmd.Flags().BoolVarP(&datasourcesCreateInteractive, "interactive", "i", false, "use interactive form input")
+	datasourcesCreateCmd.Flags().StringVar(&datasourcesCreateName, "name", "", "Human-readable datasource name")
+	datasourcesCreateCmd.MarkFlagRequired("name")
+	datasourcesCreateCmd.Flags().StringVar(&datasourcesCreateDescription, "description", "", "What this datasource contains")
+	datasourcesCreateCmd.Flags().StringVar(&datasourcesCreateConnector, "connector", "", "Connection configuration — omit for file-upload datasources")
+	datasourcesCreateCmd.Flags().StringVar(&datasourcesCreateMetadataConfig, "metadata-config", "", "Optional metadata extraction config to apply after creation")
 }

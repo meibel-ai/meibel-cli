@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
-	"github.com/meibel-ai/meibel-go/meibel/internal/config"
-	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
-	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/config"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
@@ -21,7 +20,7 @@ var (
 	documentsSubmitDeepTransformSchema string
 	documentsSubmitDeepTransformRootName string
 	documentsSubmitDeepTransformGuidance string
-	documentsSubmitDeepTransformMaxPages string
+	documentsSubmitDeepTransformMaxPages int64
 	documentsSubmitDeepTransformTrace bool
 	documentsSubmitDeepTransformBrowser bool
 	documentsSubmitDeepTransformWait bool
@@ -59,47 +58,28 @@ var documentsSubmitDeepTransformCmd = &cobra.Command{
 			}
 		}
 
-		f, err := os.Open(documentsSubmitDeepTransformFile)
-		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
+		opts := sdk.DocumentsSubmitDeepTransformOptions{}
+		opts.File = documentsSubmitDeepTransformFile
+		opts.Schema = documentsSubmitDeepTransformSchema
+		if documentsSubmitDeepTransformRootName != "" {
+			opts.RootName = &documentsSubmitDeepTransformRootName
 		}
-		defer f.Close()
-
-		fi, err := f.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to stat file: %w", err)
+		if documentsSubmitDeepTransformGuidance != "" {
+			opts.Guidance = &documentsSubmitDeepTransformGuidance
 		}
-		fileName := filepath.Base(documentsSubmitDeepTransformFile)
-		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
+		if documentsSubmitDeepTransformMaxPages != 0 {
+			opts.MaxPages = &documentsSubmitDeepTransformMaxPages
+		}
 
 		if documentsSubmitDeepTransformWait {
-			result, err := client.Documents.SubmitTransform(ctx, pr, fileName, documentsSubmitDeepTransformSchema, documentsSubmitDeepTransformRootName, documentsSubmitDeepTransformGuidance, documentsSubmitDeepTransformMaxPages)
-			pr.Done()
+			result, err := client.Documents.SubmitTransform(ctx, sdk.DocumentsSubmitTransformOptions{File: documentsSubmitDeepTransformFile, Schema: documentsSubmitDeepTransformSchema})
 			if err != nil {
 				return err
 			}
-
-			type jobResult struct {
-				JobID string `json:"job_id"`
-			}
-			var jr jobResult
-			b, _ := json.Marshal(result)
-			json.Unmarshal(b, &jr)
-
-			if documentsSubmitDeepTransformBrowser && jr.JobID != "" {
-				consoleURL := deriveConsoleURL(config.GetString("base_url"))
-				projectID := config.GetString("project_id")
-				if consoleURL != "" && projectID != "" {
-					url := fmt.Sprintf("%s/projects/%s/documents/%s", consoleURL, projectID, jr.JobID)
-					openBrowser(url)
-				}
-			}
-
 			return output.Print(result)
 		}
 
-		result, err := client.Documents.SubmitDeepTransform(ctx, pr, fileName, documentsSubmitDeepTransformSchema, documentsSubmitDeepTransformRootName, documentsSubmitDeepTransformGuidance, documentsSubmitDeepTransformMaxPages)
-		pr.Done()
+		result, err := client.Documents.SubmitDeepTransform(ctx, opts)
 		if err != nil {
 			return err
 		}
@@ -142,13 +122,14 @@ var documentsSubmitDeepTransformCmd = &cobra.Command{
 func init() {
 	documentsCmd.AddCommand(documentsSubmitDeepTransformCmd)
 
-	documentsSubmitDeepTransformCmd.Flags().StringVarP(&documentsSubmitDeepTransformFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
+	documentsSubmitDeepTransformCmd.Flags().StringVarP(&documentsSubmitDeepTransformFile, "file", "f", "", "Document file to extract from")
 	documentsSubmitDeepTransformCmd.MarkFlagFilename("file")
-	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformSchema, "schema", "", "schema")
-	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformRootName, "root-name", "", "root name")
-	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformGuidance, "guidance", "", "guidance")
-	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformMaxPages, "max-pages", "", "max pages")
+	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformSchema, "schema", "", "JSON Schema (as a JSON string) of the entities to extract")
+	documentsSubmitDeepTransformCmd.MarkFlagRequired("schema")
+	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformRootName, "root-name", "", "Name of the root entity in the schema. Optional: resolved from the schema's title or inferred when omitted.")
+	documentsSubmitDeepTransformCmd.Flags().StringVar(&documentsSubmitDeepTransformGuidance, "guidance", "", "Optional domain guidance for the extraction")
+	documentsSubmitDeepTransformCmd.Flags().Int64Var(&documentsSubmitDeepTransformMaxPages, "max-pages", 0, "Optional cap on the number of pages to process")
 	documentsSubmitDeepTransformCmd.Flags().BoolVar(&documentsSubmitDeepTransformTrace, "trace", false, "stream parsing trace after upload")
 	documentsSubmitDeepTransformCmd.Flags().BoolVar(&documentsSubmitDeepTransformBrowser, "browser", false, "open trace in console")
-	documentsSubmitDeepTransformCmd.Flags().BoolVar(&documentsSubmitDeepTransformWait, "wait", false, "wait for parsing to complete (synchronous)")
+	documentsSubmitDeepTransformCmd.Flags().BoolVar(&documentsSubmitDeepTransformWait, "wait", false, "wait for completion (synchronous)")
 }

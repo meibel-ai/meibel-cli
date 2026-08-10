@@ -6,23 +6,22 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
-	"github.com/meibel-ai/meibel-go/meibel/internal/output"
-	"github.com/meibel-ai/meibel-go/meibel/internal/config"
-	"github.com/meibel-ai/meibel-go/meibel/internal/tui"
-	"github.com/meibel-ai/meibel-go/meibel/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/config"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
+	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
 var (
 	documentsSubmitTransformFile string
-	documentsSubmitTransformArtifactSchema string
+	documentsSubmitTransformSchema string
 	documentsSubmitTransformModel string
 	documentsSubmitTransformPrompt string
 	documentsSubmitTransformPromptId string
-	documentsSubmitTransformTimeoutSeconds string
+	documentsSubmitTransformTimeoutSeconds int64
 	documentsSubmitTransformTrace bool
 	documentsSubmitTransformBrowser bool
 )
@@ -59,21 +58,23 @@ var documentsSubmitTransformCmd = &cobra.Command{
 			}
 		}
 
-		f, err := os.Open(documentsSubmitTransformFile)
-		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
+		opts := sdk.DocumentsSubmitTransformOptions{}
+		opts.File = documentsSubmitTransformFile
+		opts.Schema = documentsSubmitTransformSchema
+		if documentsSubmitTransformModel != "" {
+			opts.Model = &documentsSubmitTransformModel
 		}
-		defer f.Close()
-
-		fi, err := f.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to stat file: %w", err)
+		if documentsSubmitTransformPrompt != "" {
+			opts.Prompt = &documentsSubmitTransformPrompt
 		}
-		fileName := filepath.Base(documentsSubmitTransformFile)
-		pr := upload.NewProgressReader(f, fi.Size(), "Uploading")
+		if documentsSubmitTransformPromptId != "" {
+			opts.PromptId = &documentsSubmitTransformPromptId
+		}
+		if documentsSubmitTransformTimeoutSeconds != 0 {
+			opts.TimeoutSeconds = &documentsSubmitTransformTimeoutSeconds
+		}
 
-		result, err := client.Documents.SubmitTransform(ctx, pr, fileName, documentsSubmitTransformArtifactSchema, documentsSubmitTransformModel, documentsSubmitTransformPrompt, documentsSubmitTransformPromptId, documentsSubmitTransformTimeoutSeconds)
-		pr.Done()
+		result, err := client.Documents.SubmitTransform(ctx, opts)
 		if err != nil {
 			return err
 		}
@@ -116,13 +117,14 @@ var documentsSubmitTransformCmd = &cobra.Command{
 func init() {
 	documentsCmd.AddCommand(documentsSubmitTransformCmd)
 
-	documentsSubmitTransformCmd.Flags().StringVarP(&documentsSubmitTransformFile, "file", "f", "", "path to file to upload (interactive picker if omitted)")
+	documentsSubmitTransformCmd.Flags().StringVarP(&documentsSubmitTransformFile, "file", "f", "", "Document file to transform")
 	documentsSubmitTransformCmd.MarkFlagFilename("file")
-	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformArtifactSchema, "artifact-schema", "", "artifact schema")
-	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformModel, "model", "", "model")
-	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPrompt, "prompt", "", "prompt")
-	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPromptId, "prompt-id", "", "prompt id")
-	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformTimeoutSeconds, "timeout-seconds", "", "timeout seconds")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformSchema, "schema", "", "JSON Schema dict (as JSON string) or schema name/ID")
+	documentsSubmitTransformCmd.MarkFlagRequired("schema")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformModel, "model", "", "LLM model override")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPrompt, "prompt", "", "Extraction instructions override")
+	documentsSubmitTransformCmd.Flags().StringVar(&documentsSubmitTransformPromptId, "prompt-id", "", "Prompt template reference")
+	documentsSubmitTransformCmd.Flags().Int64Var(&documentsSubmitTransformTimeoutSeconds, "timeout-seconds", 0, "Max wait time in seconds (sync only)")
 	documentsSubmitTransformCmd.Flags().BoolVar(&documentsSubmitTransformTrace, "trace", false, "stream parsing trace after upload")
 	documentsSubmitTransformCmd.Flags().BoolVar(&documentsSubmitTransformBrowser, "browser", false, "open trace in console")
 }

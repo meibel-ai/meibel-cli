@@ -2,8 +2,10 @@
   "version": "1.0",
   "forgeVersion": "0.1.0",
   "target": "go-cli",
-  "timestamp": "2026-07-22T19:09:05.443Z",
+  "timestamp": "2026-08-10T05:31:51.886Z",
   "files": [
+    ".github/workflows/release.yml",
+    ".goreleaser.yaml",
     "cmd/agents.go",
     "cmd/agents_create.go",
     "cmd/agents_delete.go",
