@@ -9,8 +9,10 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
+	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-cli/internal/tui"
 	"github.com/meibel-ai/meibel-cli/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/pathutil"
 )
 
 var (
@@ -36,14 +38,22 @@ Arguments:
 
 		sessionId := args[0]
 
-		if agentsSessionsSendChatMessageStreamFile == "" {
-			home, _ := os.UserHomeDir()
-			if home == "" {
-				home, _ = os.Getwd()
+		if agentsSessionsSendChatMessageStreamFile == "" && term.IsTerminal(int(os.Stdin.Fd())) {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewInput().
+					Title("File path").
+					Description("Paste or type a path — leave blank to browse").
+					Value(&agentsSessionsSendChatMessageStreamFile),
+			)).Run(); err != nil {
+				return err
 			}
+			agentsSessionsSendChatMessageStreamFile = pathutil.Expand(agentsSessionsSendChatMessageStreamFile)
+		}
+
+		if agentsSessionsSendChatMessageStreamFile == "" {
 			picker := huh.NewFilePicker().
 				Title("Select a file").
-				CurrentDirectory(home).
+				CurrentDirectory(pathutil.StartDir()).
 				FileAllowed(true).
 				DirAllowed(false).
 				ShowHidden(false).

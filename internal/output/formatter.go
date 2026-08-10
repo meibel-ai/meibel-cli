@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	"golang.org/x/term"
 )
@@ -23,7 +24,25 @@ const (
 	FormatText
 )
 
-var currentFormat = FormatAuto
+var (
+	currentFormat = FormatAuto
+	// wideOutput disables column narrowing (--wide).
+	wideOutput bool
+	// browseOutput requests the interactive table (--interactive).
+	browseOutput bool
+	// activePreferred carries the configured columns for the current Print call.
+	activePreferred []string
+)
+
+// SetWide shows every column instead of the narrowed default view.
+func SetWide(w bool) { wideOutput = w }
+
+// SetBrowse requests the scrollable table for collection output.
+func SetBrowse(b bool) { browseOutput = b }
+
+// BrowseFunc renders a scrollable table. It is injected by the CLI to avoid an
+// import cycle between output and tui, and is nil when browsing is unavailable.
+var BrowseFunc func(headers []string, rows [][]string) (bool, error)
 
 // SetFormat sets the global output format.
 func SetFormat(f Format) {
@@ -41,7 +60,12 @@ func IsTerminal() bool {
 }
 
 // Print outputs the data in the appropriate format.
-func Print(data interface{}) error {
+//
+// preferredColumns, when given, names the columns a collection should show in
+// table view; it comes from config and is ignored for non-collections and for
+// JSON output.
+func Print(data interface{}, preferredColumns ...string) error {
+	activePreferred = preferredColumns
 	format := currentFormat
 
 	// Auto-detect format
@@ -51,6 +75,18 @@ func Print(data interface{}) error {
 		} else {
 			format = FormatJSON
 		}
+	}
+
+	// A string result is already a document — markdown from a text endpoint, or
+	// JSON text from the same endpoint under ?format=json. Emit it verbatim in
+	// every mode: JSON-encoding it would escape the whole payload into one quoted
+	// line, breaking `> out.md` and `| jq` alike.
+	if s, ok := asString(data); ok {
+		fmt.Print(s)
+		if !strings.HasSuffix(s, "\n") {
+			fmt.Println()
+		}
+		return nil
 	}
 
 	switch format {
@@ -140,6 +176,12 @@ func printTable(data interface{}) error {
 		return printSliceAsTable(v)
 
 	case reflect.Struct:
+		// Most list endpoints wrap their collection in an envelope — {"data": [...],
+		// "pagination": {...}} or {"datasources": [...]} — which as a struct would
+		// render as one unreadable line of Go literals. Render the collection.
+		if coll, ok := unwrapCollection(v); ok {
+			return printSliceAsTable(coll)
+		}
 		return printStructAsTable(v)
 
 	case reflect.Map:
@@ -149,6 +191,73 @@ func printTable(data interface{}) error {
 		// Fall back to JSON for unknown types
 		return printJSON(data)
 	}
+}
+
+// asString reports whether data is a string or *string, returning its value.
+func asString(data interface{}) (string, bool) {
+	switch v := data.(type) {
+	case string:
+		return v, true
+	case *string:
+		if v == nil {
+			return "", false
+		}
+		return *v, true
+	}
+	return "", false
+}
+
+// jsonFieldName returns the wire name of a struct field, preferring its json tag.
+// The tag is only sometimes suffixed with options, so the comma is optional —
+// treating it as required left untagged-looking headers like "CreatedAt" beside
+// tagged ones like "last_sync_at".
+func jsonFieldName(field reflect.StructField) string {
+	tag := field.Tag.Get("json")
+	if tag == "" || tag == "-" {
+		return field.Name
+	}
+	if i := strings.IndexByte(tag, ','); i >= 0 {
+		tag = tag[:i]
+	}
+	if tag == "" {
+		return field.Name
+	}
+	return tag
+}
+
+// unwrapCollection finds the single slice-of-structs field of an envelope struct,
+// so a wrapped collection is tabulated rather than dumped as a literal. Structs
+// with no such field, or more than one, are left alone — the intent would be
+// ambiguous.
+func unwrapCollection(v reflect.Value) (reflect.Value, bool) {
+	t := v.Type()
+	found := -1
+	for i := 0; i < t.NumField(); i++ {
+		if !t.Field(i).IsExported() {
+			continue
+		}
+		f := unwrapValue(v.Field(i))
+		if f.Kind() != reflect.Slice && f.Kind() != reflect.Array {
+			continue
+		}
+		// Only element types that tabulate are worth unwrapping; a []string field
+		// is data on the object, not the object's collection.
+		elem := t.Field(i).Type
+		for elem.Kind() == reflect.Ptr || elem.Kind() == reflect.Slice || elem.Kind() == reflect.Array {
+			elem = elem.Elem()
+		}
+		if elem.Kind() != reflect.Struct && elem.Kind() != reflect.Interface {
+			continue
+		}
+		if found >= 0 {
+			return reflect.Value{}, false
+		}
+		found = i
+	}
+	if found < 0 {
+		return reflect.Value{}, false
+	}
+	return unwrapValue(v.Field(found)), true
 }
 
 // unwrapValue peels interface and pointer wrappers so reflection sees the
@@ -186,8 +295,50 @@ func printSliceAsTable(v reflect.Value) error {
 
 	// Build table from slice of structs
 	headers, rows := structSliceToTable(v)
+
+	// Browsing shows every column and pans, so it skips narrowing entirely.
+	if browseOutput && BrowseFunc != nil {
+		shown, err := BrowseFunc(headers, rows)
+		if err != nil {
+			return err
+		}
+		if shown {
+			return nil
+		}
+		// Not a terminal: fall through to static output.
+	}
+
+	if !wideOutput {
+		idx := SelectColumns(headers, rows, activePreferred, TerminalWidth())
+		headers, rows = projectColumns(headers, rows, idx)
+	}
+
 	PrintTable(headers, rows)
 	return nil
+}
+
+// projectColumns reduces headers and rows to the given column indices.
+func projectColumns(headers []string, rows [][]string, idx []int) ([]string, [][]string) {
+	if len(idx) == 0 || len(idx) == len(headers) {
+		return headers, rows
+	}
+	h := make([]string, 0, len(idx))
+	for _, i := range idx {
+		h = append(h, headers[i])
+	}
+	out := make([][]string, 0, len(rows))
+	for _, row := range rows {
+		r := make([]string, 0, len(idx))
+		for _, i := range idx {
+			if i < len(row) {
+				r = append(r, row[i])
+			} else {
+				r = append(r, "")
+			}
+		}
+		out = append(out, r)
+	}
+	return h, out
 }
 
 func printStructAsTable(v reflect.Value) error {
@@ -204,20 +355,7 @@ func printStructAsTable(v reflect.Value) error {
 			continue
 		}
 
-		// Get JSON tag name if available
-		name := field.Name
-		if tag := field.Tag.Get("json"); tag != "" && tag != "-" {
-			// Parse json tag (handle omitempty, etc.)
-			for j := 0; j < len(tag); j++ {
-				if tag[j] == ',' {
-					name = tag[:j]
-					break
-				}
-			}
-			if name == "" {
-				name = tag
-			}
-		}
+		name := jsonFieldName(field)
 
 		// Handle pointer values
 		displayValue := value
@@ -271,19 +409,7 @@ func structSliceToTable(v reflect.Value) ([]string, [][]string) {
 			continue
 		}
 
-		// Get JSON tag name
-		name := field.Name
-		if tag := field.Tag.Get("json"); tag != "" && tag != "-" {
-			for j := 0; j < len(tag); j++ {
-				if tag[j] == ',' {
-					name = tag[:j]
-					break
-				}
-			}
-			if name == "" {
-				name = tag
-			}
-		}
+		name := jsonFieldName(field)
 
 		headers = append(headers, name)
 		fieldIndices = append(fieldIndices, i)

@@ -52,7 +52,7 @@ Arguments:
 			return err
 		}
 
-		return output.Print(items)
+		return output.Print(items, "name", "type", "llm_model", "last_execution_status")
 	},
 }
 

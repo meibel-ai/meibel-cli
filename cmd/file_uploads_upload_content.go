@@ -10,10 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/charmbracelet/huh"
+	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-cli/internal/output"
 	"github.com/meibel-ai/meibel-cli/internal/config"
 	"github.com/meibel-ai/meibel-cli/internal/tui"
 	"github.com/meibel-ai/meibel-cli/internal/upload"
+	"github.com/meibel-ai/meibel-cli/internal/pathutil"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -38,14 +40,22 @@ Arguments:
 
 		datasourceId := args[0]
 
-		if fileUploadsUploadContentFile == "" {
-			home, _ := os.UserHomeDir()
-			if home == "" {
-				home, _ = os.Getwd()
+		if fileUploadsUploadContentFile == "" && term.IsTerminal(int(os.Stdin.Fd())) {
+			if err := huh.NewForm(huh.NewGroup(
+				huh.NewInput().
+					Title("File path").
+					Description("Paste or type a path — leave blank to browse").
+					Value(&fileUploadsUploadContentFile),
+			)).Run(); err != nil {
+				return err
 			}
+			fileUploadsUploadContentFile = pathutil.Expand(fileUploadsUploadContentFile)
+		}
+
+		if fileUploadsUploadContentFile == "" {
 			picker := huh.NewFilePicker().
 				Title("Select a file").
-				CurrentDirectory(home).
+				CurrentDirectory(pathutil.StartDir()).
 				FileAllowed(true).
 				DirAllowed(false).
 				ShowHidden(false).

@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/meibel-ai/meibel-cli/internal/config"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	"github.com/meibel-ai/meibel-cli/internal/version"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
@@ -16,6 +17,8 @@ import (
 var (
 	cfgFile string
 	jsonOutput bool
+	wideOutput bool
+	browseOutput bool
 	debug bool
 	client *sdk.MeibelClient
 )
@@ -50,6 +53,11 @@ var rootCmd = &cobra.Command{
 		client = sdk.NewClient(opts...)
 
 		// Set output format
+		output.SetWide(wideOutput)
+		output.SetBrowse(browseOutput)
+		// Injected here so the output package need not import tui.
+		output.BrowseFunc = tui.BrowseTable
+
 		if jsonOutput {
 			output.SetFormat(output.FormatJSON)
 		}
@@ -78,6 +86,8 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.meibel/config.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&jsonOutput, "json", false, "output as JSON")
+	rootCmd.PersistentFlags().BoolVar(&wideOutput, "wide", false, "show all columns in table output")
+	rootCmd.PersistentFlags().BoolVar(&browseOutput, "interactive", false, "browse results in a scrollable table")
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "enable debug logging")
 
 	// Bind flags to viper
