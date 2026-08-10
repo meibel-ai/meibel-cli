@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -46,7 +47,9 @@ var executionsCreateCmd = &cobra.Command{
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
+		sp := tui.StartSpinner("Create Batch Execution")
 		result, err := client.Batches.Executions.Create(ctx, body)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var artifactSchemasGetCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		artifactId := args[0]
 
+		sp := tui.StartSpinner("Get Artifact Schema")
 		result, err := client.ArtifactSchemas.Get(ctx, artifactId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

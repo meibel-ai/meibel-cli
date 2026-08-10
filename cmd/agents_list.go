@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -51,10 +52,12 @@ var agentsListCmd = &cobra.Command{
 
 		iter := client.Agents.List(ctx, opts)
 
+		sp := tui.StartSpinner("List Agents")
 		var items []interface{}
 		for iter.Next(ctx) {
 			items = append(items, iter.Item())
 		}
+		sp.Stop()
 		if err := iter.Err(); err != nil {
 			return err
 		}

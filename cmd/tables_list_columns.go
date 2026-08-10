@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var tablesListColumnsCmd = &cobra.Command{
@@ -23,7 +24,9 @@ Arguments:
 		tableName := args[0]
 		datasourceId := args[1]
 
+		sp := tui.StartSpinner("List Columns")
 		result, err := client.Datasources.Tables.ListColumns(ctx, tableName, datasourceId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

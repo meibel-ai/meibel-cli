@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var documentsGetDeepTransformStatusCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		jobId := args[0]
 
+		sp := tui.StartSpinner("Get deep-transform job status")
 		result, err := client.Documents.GetDeepTransformStatus(ctx, jobId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

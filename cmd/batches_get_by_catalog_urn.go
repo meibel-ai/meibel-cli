@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var (
@@ -19,7 +20,9 @@ var batchesGetByCatalogUrnCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
+		sp := tui.StartSpinner("Get Batch Definition By Catalog Urn")
 		result, err := client.Batches.GetByCatalogUrn(ctx, batchesGetByCatalogUrnCatalogUrn)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var dataElementsGetCmd = &cobra.Command{
@@ -23,7 +24,9 @@ Arguments:
 		dataElementId := args[0]
 		datasourceId := args[1]
 
+		sp := tui.StartSpinner("Get Data Element")
 		result, err := client.Datasources.DataElements.Get(ctx, dataElementId, datasourceId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

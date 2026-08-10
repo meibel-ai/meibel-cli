@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var executionsGetByIdCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		executionId := args[0]
 
+		sp := tui.StartSpinner("Get Batch Execution By Id")
 		result, err := client.Batches.Executions.GetById(ctx, executionId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

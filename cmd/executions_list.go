@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -41,7 +42,9 @@ var executionsListCmd = &cobra.Command{
 			opts.SortOrder = &executionsListSortOrder
 		}
 
+		sp := tui.StartSpinner("List Batch Executions")
 		result, err := client.Batches.Executions.List(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

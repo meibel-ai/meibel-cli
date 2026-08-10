@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -37,10 +38,12 @@ Arguments:
 
 		iter := client.Datasources.DataElements.List(ctx, datasourceId, opts)
 
+		sp := tui.StartSpinner("List Data Elements")
 		var items []interface{}
 		for iter.Next(ctx) {
 			items = append(items, iter.Item())
 		}
+		sp.Stop()
 		if err := iter.Err(); err != nil {
 			return err
 		}

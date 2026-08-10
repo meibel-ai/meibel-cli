@@ -2,7 +2,7 @@
   "version": "1.0",
   "forgeVersion": "0.1.0",
   "target": "go-cli",
-  "timestamp": "2026-08-10T05:43:30.102Z",
+  "timestamp": "2026-08-10T06:30:48.305Z",
   "files": [
     ".github/workflows/release.yml",
     ".goreleaser.yaml",
@@ -115,6 +115,7 @@
     "internal/output/markdown.go",
     "internal/output/styles.go",
     "internal/output/table.go",
+    "internal/tui/spinner.go",
     "internal/tui/tui.go",
     "internal/upload/progress.go",
     "internal/version/version.go",

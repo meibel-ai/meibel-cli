@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var ingestGetStatusCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		datasourceId := args[0]
 
+		sp := tui.StartSpinner("Get Ingest Status")
 		result, err := client.Datasources.Ingest.GetStatus(ctx, datasourceId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

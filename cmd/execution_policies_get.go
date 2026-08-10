@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var executionPoliciesGetCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		policyId := args[0]
 
+		sp := tui.StartSpinner("Get Execution Policy")
 		result, err := client.ExecutionPolicies.Get(ctx, policyId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

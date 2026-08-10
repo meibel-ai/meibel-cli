@@ -74,12 +74,12 @@ var Styles = struct {
 		Bold(true),
 
 	// Table styles
+	// No bottom border here: PrintTable draws its own separator row, and a
+	// bordered style renders each cell two lines tall, which garbles the
+	// single-line join used to lay out the header.
 	TableHeader: lipgloss.NewStyle().
 		Bold(true).
-		Foreground(ColorPrimary).
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true).
-		BorderForeground(ColorMuted),
+		Foreground(ColorPrimary),
 
 	TableCell: lipgloss.NewStyle().
 		Padding(0, 1),

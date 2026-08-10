@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var (
@@ -35,7 +36,9 @@ Arguments:
 			}
 		}
 
+		sp := tui.StartSpinner("Delete Batch Definition By Id")
 		err := client.Batches.DeleteById(ctx, definitionId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

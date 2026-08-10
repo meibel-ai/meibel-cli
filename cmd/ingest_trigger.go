@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var ingestTriggerCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		datasourceId := args[0]
 
+		sp := tui.StartSpinner("Trigger Ingest")
 		result, err := client.Datasources.Ingest.Trigger(ctx, datasourceId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

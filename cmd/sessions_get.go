@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var sessionsGetCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		sessionId := args[0]
 
+		sp := tui.StartSpinner("Get Session")
 		result, err := client.Sessions.Get(ctx, sessionId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

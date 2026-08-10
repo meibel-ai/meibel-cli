@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -57,7 +58,9 @@ var confidenceScoringListScoringJobsCmd = &cobra.Command{
 			opts.ToolExecutionId = &confidenceScoringListScoringJobsToolExecutionId
 		}
 
+		sp := tui.StartSpinner("List scoring jobs")
 		result, err := client.ConfidenceScoring.ListScoringJobs(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

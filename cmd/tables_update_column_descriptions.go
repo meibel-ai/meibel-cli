@@ -10,6 +10,7 @@ import (
 	"github.com/charmbracelet/huh"
 	"golang.org/x/term"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -54,7 +55,9 @@ Arguments:
 			return fmt.Errorf("--data flag required in non-interactive mode")
 		}
 
+		sp := tui.StartSpinner("Update Column Descriptions")
 		result, err := client.Datasources.Tables.UpdateColumnDescriptions(ctx, tableName, datasourceId, body)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

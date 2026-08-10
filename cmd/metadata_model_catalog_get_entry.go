@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var metadataModelCatalogGetEntryCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		modelId := args[0]
 
+		sp := tui.StartSpinner("Get Metadata Model Catalog Entry")
 		result, err := client.MetadataModelCatalog.GetEntry(ctx, modelId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var agentsGetCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		agentId := args[0]
 
+		sp := tui.StartSpinner("Get Agent")
 		result, err := client.Agents.Get(ctx, agentId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

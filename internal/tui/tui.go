@@ -176,34 +176,3 @@ func (m *streamModel[T]) listenForEvents() tea.Cmd {
 		}
 	}
 }
-
-// Spinner shows a spinner while an operation is in progress.
-type Spinner struct {
-	model   spinner.Model
-	message string
-}
-
-// NewSpinner creates a new spinner with a message.
-func NewSpinner(message string) *Spinner {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(colorPrimary)
-	return &Spinner{
-		model:   s,
-		message: message,
-	}
-}
-
-// WithSpinner runs a function with a spinner displayed.
-func WithSpinner[T any](message string, fn func() (T, error)) (T, error) {
-	// For simplicity, just run the function directly
-	// A full implementation would use Bubbletea
-	fmt.Print(message + "...")
-	result, err := fn()
-	if err != nil {
-		fmt.Println(" ✗")
-		return result, err
-	}
-	fmt.Println(" ✓")
-	return result, nil
-}

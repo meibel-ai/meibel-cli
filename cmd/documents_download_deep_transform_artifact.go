@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var documentsDownloadDeepTransformArtifactCmd = &cobra.Command{
@@ -23,7 +24,9 @@ Arguments:
 		jobId := args[0]
 		name := args[1]
 
+		sp := tui.StartSpinner("Download a deep-transform artifact")
 		result, err := client.Documents.DownloadDeepTransformArtifact(ctx, jobId, name)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

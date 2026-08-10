@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var batchesExecuteCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		definitionId := args[0]
 
+		sp := tui.StartSpinner("Execute Batch Definition")
 		result, err := client.Batches.Execute(ctx, definitionId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

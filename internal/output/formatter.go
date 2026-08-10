@@ -151,24 +151,34 @@ func printTable(data interface{}) error {
 	}
 }
 
+// unwrapValue peels interface and pointer wrappers so reflection sees the
+// concrete value. Needed because paginated results are collected as
+// []interface{} and SDK models are often pointers.
+func unwrapValue(v reflect.Value) reflect.Value {
+	for v.Kind() == reflect.Interface || v.Kind() == reflect.Ptr {
+		if v.IsNil() {
+			return v
+		}
+		v = v.Elem()
+	}
+	return v
+}
+
 func printSliceAsTable(v reflect.Value) error {
 	if v.Len() == 0 {
 		return nil
 	}
 
-	// Get the first element to determine structure
-	first := v.Index(0)
-	if first.Kind() == reflect.Ptr {
-		first = first.Elem()
-	}
+	// Get the first element to determine structure. Paginated commands collect
+	// into []interface{}, so the interface has to be unwrapped before the element
+	// looks like a struct — otherwise every list falls through to the bullet
+	// fallback and prints raw Go struct dumps instead of a table.
+	first := unwrapValue(v.Index(0))
 
 	if first.Kind() != reflect.Struct {
 		// Not a slice of structs, print as list
 		for i := 0; i < v.Len(); i++ {
-			item := v.Index(i)
-			if item.Kind() == reflect.Ptr {
-				item = item.Elem()
-			}
+			item := unwrapValue(v.Index(i))
 			fmt.Printf("%s %v\n", IconBullet, item.Interface())
 		}
 		return nil
@@ -248,10 +258,7 @@ func structSliceToTable(v reflect.Value) ([]string, [][]string) {
 	}
 
 	// Get struct type from first element
-	first := v.Index(0)
-	if first.Kind() == reflect.Ptr {
-		first = first.Elem()
-	}
+	first := unwrapValue(v.Index(0))
 	t := first.Type()
 
 	// Build headers from struct fields
@@ -285,9 +292,11 @@ func structSliceToTable(v reflect.Value) ([]string, [][]string) {
 	// Build rows
 	var rows [][]string
 	for i := 0; i < v.Len(); i++ {
-		item := v.Index(i)
-		if item.Kind() == reflect.Ptr {
-			item = item.Elem()
+		item := unwrapValue(v.Index(i))
+		// A heterogeneous slice would panic on Field(); skip anything that is not
+		// the struct type the headers were derived from.
+		if item.Kind() != reflect.Struct || item.Type() != t {
+			continue
 		}
 
 		var row []string

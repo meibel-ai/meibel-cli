@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var (
@@ -42,7 +43,9 @@ Arguments:
 			return fmt.Errorf("--data flag required (interactive form not available for this type)")
 		}
 
+		sp := tui.StartSpinner("Create Session By Name")
 		result, err := client.Agents.Sessions.CreateByName(ctx, name, &body)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

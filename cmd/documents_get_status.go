@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var documentsGetStatusCmd = &cobra.Command{
@@ -21,7 +22,9 @@ Arguments:
 
 		jobId := args[0]
 
+		sp := tui.StartSpinner("Get document parsing status")
 		result, err := client.Documents.GetStatus(ctx, jobId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

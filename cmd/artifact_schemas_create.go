@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -56,7 +57,9 @@ var artifactSchemasCreateCmd = &cobra.Command{
 			opts.AdditionalProperties = v
 		}
 
+		sp := tui.StartSpinner("Create Artifact Schema")
 		result, err := client.ArtifactSchemas.Create(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

@@ -72,14 +72,18 @@ var documentsSubmitDeepTransformCmd = &cobra.Command{
 		}
 
 		if documentsSubmitDeepTransformWait {
+			sp := tui.StartSpinner("Submit a deep-transform extraction from a file upload (async)")
 			result, err := client.Documents.SubmitTransform(ctx, sdk.DocumentsSubmitTransformOptions{File: documentsSubmitDeepTransformFile, Schema: documentsSubmitDeepTransformSchema})
+			sp.Stop()
 			if err != nil {
 				return err
 			}
 			return output.Print(result)
 		}
 
+		sp := tui.StartSpinner("Submit a deep-transform extraction from a file upload (async)")
 		result, err := client.Documents.SubmitDeepTransform(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

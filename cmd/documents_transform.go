@@ -76,14 +76,18 @@ var documentsTransformCmd = &cobra.Command{
 		}
 
 		if documentsTransformWait {
+			sp := tui.StartSpinner("Transform a document using AI extraction (sync)")
 			result, err := client.Documents.SubmitDeepTransform(ctx, sdk.DocumentsSubmitDeepTransformOptions{File: documentsTransformFile, Schema: documentsTransformSchema})
+			sp.Stop()
 			if err != nil {
 				return err
 			}
 			return output.Print(result)
 		}
 
+		sp := tui.StartSpinner("Transform a document using AI extraction (sync)")
 		result, err := client.Documents.Transform(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

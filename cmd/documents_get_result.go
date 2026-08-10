@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -31,7 +32,9 @@ Arguments:
 			opts.Format = &documentsGetResultFormat
 		}
 
+		sp := tui.StartSpinner("Get parsed document result")
 		result, err := client.Documents.GetResult(ctx, jobId, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

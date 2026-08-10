@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var confidenceScoringGetAgentSessionScoringSummaryCmd = &cobra.Command{
@@ -23,7 +24,9 @@ Arguments:
 		agentName := args[0]
 		sessionId := args[1]
 
+		sp := tui.StartSpinner("Get agent session scoring summary")
 		result, err := client.ConfidenceScoring.GetAgentSessionScoringSummary(ctx, agentName, sessionId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

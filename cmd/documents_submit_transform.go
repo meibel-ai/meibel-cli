@@ -74,7 +74,9 @@ var documentsSubmitTransformCmd = &cobra.Command{
 			opts.TimeoutSeconds = &documentsSubmitTransformTimeoutSeconds
 		}
 
+		sp := tui.StartSpinner("Submit a document transform (async)")
 		result, err := client.Documents.SubmitTransform(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

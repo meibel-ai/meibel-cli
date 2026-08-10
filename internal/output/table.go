@@ -3,7 +3,24 @@ package output
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 )
+
+// truncate shortens s to width runes, ending in an ellipsis when it had to cut.
+func truncate(s string, width int) string {
+	if utf8.RuneCountInString(s) <= width {
+		return s
+	}
+	if width <= 1 {
+		return strings.Repeat("…", width)
+	}
+	r := []rune(s)
+	return string(r[:width-1]) + "…"
+}
+
+// maxColWidth caps any single column so one long free-text field (a description,
+// a prompt) cannot push the table past the terminal and wrap every row.
+const maxColWidth = 40
 
 // PrintTable prints data as a formatted table.
 func PrintTable(headers []string, rows [][]string) {
@@ -14,14 +31,33 @@ func PrintTable(headers []string, rows [][]string) {
 	// Calculate column widths
 	widths := make([]int, len(headers))
 	for i, h := range headers {
-		widths[i] = len(h)
+		widths[i] = utf8.RuneCountInString(h)
 	}
 	for _, row := range rows {
 		for i, cell := range row {
-			if i < len(widths) && len(cell) > widths[i] {
-				widths[i] = len(cell)
+			if i < len(widths) {
+				if n := utf8.RuneCountInString(cell); n > widths[i] {
+					widths[i] = n
+				}
 			}
 		}
+	}
+	for i, w := range widths {
+		if w > maxColWidth {
+			widths[i] = maxColWidth
+		}
+	}
+
+	// Truncate cells that exceed the capped width
+	for _, row := range rows {
+		for i := range row {
+			if i < len(widths) {
+				row[i] = truncate(row[i], widths[i])
+			}
+		}
+	}
+	for i := range headers {
+		headers[i] = truncate(headers[i], widths[i])
 	}
 
 	// Print header
@@ -84,8 +120,11 @@ func PrintNumberedList(items []string) {
 }
 
 func padRight(s string, width int) string {
-	if len(s) >= width {
+	// Rune count, not byte length: a multi-byte cell would otherwise be padded
+	// short and knock the whole column out of alignment.
+	n := utf8.RuneCountInString(s)
+	if n >= width {
 		return s
 	}
-	return s + strings.Repeat(" ", width-len(s))
+	return s + strings.Repeat(" ", width-n)
 }

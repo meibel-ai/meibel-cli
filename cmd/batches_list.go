@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 	sdk "github.com/meibel-ai/meibel-go/v2"
 )
 
@@ -29,7 +30,9 @@ var batchesListCmd = &cobra.Command{
 			opts.Limit = &batchesListLimit
 		}
 
+		sp := tui.StartSpinner("List Batch Definitions")
 		result, err := client.Batches.List(ctx, opts)
+		sp.Stop()
 		if err != nil {
 			return err
 		}

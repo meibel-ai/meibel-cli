@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/meibel-ai/meibel-cli/internal/output"
+	"github.com/meibel-ai/meibel-cli/internal/tui"
 )
 
 var (
@@ -36,7 +37,9 @@ Arguments:
 			}
 		}
 
+		sp := tui.StartSpinner("Delete Datasource")
 		result, err := client.Datasources.Delete(ctx, datasourceId)
+		sp.Stop()
 		if err != nil {
 			return err
 		}
